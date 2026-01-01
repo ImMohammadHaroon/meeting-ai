@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { meetingsAPI, communityChatAPI } from '../services/api';
 import { supabase } from '../services/supabase';
 import Chatbot from '../components/Chatbot';
+import ReactMarkdown from 'react-markdown';
 
 const MeetingDetail = () => {
     const { id } = useParams();
@@ -178,9 +179,30 @@ const MeetingDetail = () => {
                                 </div>
                             )}
                             {meeting.notes ? (
-                                <div className="bg-white/5 rounded-lg p-6">
-                                    <div className="text-white/80 whitespace-pre-wrap prose prose-invert max-w-none leading-relaxed">
-                                        {meeting.notes}
+                                <div className="bg-white/5 rounded-lg p-8">
+                                    <div className="text-white/80 prose prose-invert max-w-none">
+                                        <ReactMarkdown
+                                            components={{
+                                                h1: ({ node, ...props }) => <h1 className="text-3xl font-bold text-white mb-6 mt-8 first:mt-0" {...props} />,
+                                                h2: ({ node, ...props }) => <h2 className="text-2xl font-bold text-white mb-5 mt-8 first:mt-0" {...props} />,
+                                                h3: ({ node, ...props }) => <h3 className="text-xl font-semibold text-white mb-4 mt-6 first:mt-0" {...props} />,
+                                                p: ({ node, ...props }) => <p className="text-white/80 mb-4 leading-loose text-base" {...props} />,
+                                                ul: ({ node, ...props }) => <ul className="list-disc list-outside mb-5 mt-3 space-y-2 text-white/80 pl-6" {...props} />,
+                                                ol: ({ node, ...props }) => <ol className="list-decimal list-outside mb-5 mt-3 space-y-2 text-white/80 pl-6" {...props} />,
+                                                li: ({ node, ...props }) => <li className="text-white/80 leading-relaxed pl-2" {...props} />,
+                                                strong: ({ node, ...props }) => <strong className="font-bold text-white" {...props} />,
+                                                em: ({ node, ...props }) => <em className="italic text-white/90" {...props} />,
+                                                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-purple-500 pl-6 py-3 my-6 text-white/70 italic bg-white/5 rounded-r-lg" {...props} />,
+                                                code: ({ node, inline, ...props }) =>
+                                                    inline
+                                                        ? <code className="bg-white/10 px-2 py-1 rounded text-sm text-purple-300 font-mono" {...props} />
+                                                        : <code className="block bg-white/10 p-4 rounded-lg text-sm text-purple-300 overflow-x-auto my-4 font-mono leading-relaxed" {...props} />,
+                                                a: ({ node, ...props }) => <a className="text-purple-400 hover:text-purple-300 underline decoration-purple-400/50 hover:decoration-purple-300 transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                                                hr: ({ node, ...props }) => <hr className="border-white/20 my-8" {...props} />,
+                                            }}
+                                        >
+                                            {meeting.notes}
+                                        </ReactMarkdown>
                                     </div>
                                 </div>
                             ) : (
