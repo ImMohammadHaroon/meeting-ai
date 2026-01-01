@@ -248,7 +248,44 @@ const MeetingDetail = () => {
                 return (
                     <div className="h-full flex flex-col p-6">
                         <h2 className="text-3xl font-bold mb-6 text-gradient flex-shrink-0">Meeting Audio</h2>
-                        {meeting.meeting_participants?.some(p => p.audio_file_url) ? (
+
+                        {/* Group Meeting Audio */}
+                        {meeting.type === 'group' && meeting.audio_file_url ? (
+                            <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300">
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl">
+                                            🎙️
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-white font-medium text-lg mb-1">
+                                                Group Meeting Audio
+                                            </p>
+                                            <p className="text-white/50 text-sm">
+                                                Complete recording of the group discussion
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                                        <audio
+                                            controls
+                                            className="w-full"
+                                            style={{
+                                                filter: 'invert(1) hue-rotate(180deg)',
+                                                borderRadius: '8px'
+                                            }}
+                                        >
+                                            <source src={meeting.audio_file_url} type="audio/mpeg" />
+                                            <source src={meeting.audio_file_url} type="audio/wav" />
+                                            <source src={meeting.audio_file_url} type="audio/mp4" />
+                                            <source src={meeting.audio_file_url} type="audio/webm" />
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : meeting.meeting_participants?.some(p => p.audio_file_url) ? (
+                            /* Standard Meeting - Participant Audio Files */
                             <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                 {meeting.meeting_participants.map((participant, index) => (
                                     participant.audio_file_url && (
@@ -289,11 +326,18 @@ const MeetingDetail = () => {
                                 ))}
                             </div>
                         ) : (
+                            /* No Audio Available */
                             <div className="flex items-center justify-center flex-1">
                                 <div className="text-center">
                                     <div className="text-6xl mb-4">🎙️</div>
                                     <p className="text-white/50 text-lg">
                                         No audio files uploaded yet
+                                    </p>
+                                    <p className="text-white/30 text-sm mt-2">
+                                        {meeting.type === 'group'
+                                            ? 'Upload a group audio recording to see it here'
+                                            : 'Upload participant audio files to see them here'
+                                        }
                                     </p>
                                 </div>
                             </div>

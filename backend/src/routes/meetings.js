@@ -333,13 +333,15 @@ router.post('/:id/process', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'Meeting not found' });
         }
 
+        // Extract participants early for use in processing
+        const participants = meeting.meeting_participants || [];
+
         // Check if audio files are uploaded
         if (meeting.type === 'group') {
             if (!meeting.audio_file_url) {
                 return res.status(400).json({ error: 'No group audio file uploaded' });
             }
         } else {
-            const participants = meeting.meeting_participants || [];
             const audioFiles = participants.filter(p => p.audio_file_url);
 
             if (audioFiles.length === 0) {
@@ -348,6 +350,8 @@ router.post('/:id/process', authMiddleware, async (req, res) => {
         }
 
         // Start processing (this will be async)
+        console.log(`Starting async processing for meeting ${meetingId} (Type: ${meeting.type || 'standard'})`);
+        console.log(`Meeting has ${participants.length} participants`);
         res.json({ message: 'Processing started', meetingId });
 
         // Process asynchronously
@@ -456,6 +460,12 @@ async function processMetingAsync(meetingId, meeting, participants) {
         console.log(`Meeting ${meetingId} processed successfully`);
     } catch (error) {
         console.error('Processing error:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            meetingId,
+            meetingType: meeting.type
+        });
 
         // Mark meeting as processed with error
         await supabase
