@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 import { meetingsAPI, communityChatAPI } from '../services/api';
 import { supabase } from '../services/supabase';
 import Chatbot from '../components/Chatbot';
 import ReactMarkdown from 'react-markdown';
+import { useIsMdUp } from '../hooks/useMediaQuery';
+import MobileDrawer from '../components/MobileDrawer';
 
 const MeetingDetail = () => {
     const { id } = useParams();
@@ -20,6 +23,8 @@ const MeetingDetail = () => {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [isNavOpen, setIsNavOpen] = useState(false);
+    const isMdUp = useIsMdUp();
 
     useEffect(() => {
         fetchMeetingDetails();
@@ -147,10 +152,10 @@ const MeetingDetail = () => {
         switch (activeTab) {
             case 'transcript':
                 return (
-                    <div className="h-full flex flex-col p-6">
-                        <h2 className="text-3xl font-bold mb-6 text-gradient flex-shrink-0">Transcript</h2>
+                    <div className="h-full flex flex-col p-3 md:p-6">
+                        <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-gradient flex-shrink-0">Transcript</h2>
                         {meeting.transcript ? (
-                            <div className="bg-white/5 rounded-lg p-6 flex-1 overflow-y-auto custom-scrollbar">
+                            <div className="bg-white/5 rounded-lg p-3 md:p-6 flex-1 overflow-y-auto custom-scrollbar">
                                 <p className="text-white/80 whitespace-pre-wrap leading-relaxed">
                                     {meeting.transcript}
                                 </p>
@@ -169,8 +174,8 @@ const MeetingDetail = () => {
 
             case 'notes':
                 return (
-                    <div className="h-full flex flex-col p-6">
-                        <h2 className="text-3xl font-bold mb-6 text-gradient flex-shrink-0">Meeting Notes</h2>
+                    <div className="h-full flex flex-col p-3 md:p-6">
+                        <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-gradient flex-shrink-0">Meeting Notes</h2>
                         <div className="flex-1 overflow-y-auto custom-scrollbar">
                             {meeting.description && (
                                 <div className="bg-white/5 rounded-lg p-4 mb-4 border border-white/10">
@@ -220,8 +225,8 @@ const MeetingDetail = () => {
 
             case 'tasks':
                 return (
-                    <div className="h-full flex flex-col p-6">
-                        <h2 className="text-3xl font-bold mb-6 text-gradient flex-shrink-0">Tasks Assigned</h2>
+                    <div className="h-full flex flex-col p-3 md:p-6">
+                        <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-gradient flex-shrink-0">Tasks Assigned</h2>
                         {tasks.length > 0 ? (
                             <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
                                 {tasks.map((task, index) => (
@@ -268,8 +273,8 @@ const MeetingDetail = () => {
 
             case 'audio':
                 return (
-                    <div className="h-full flex flex-col p-6">
-                        <h2 className="text-3xl font-bold mb-6 text-gradient flex-shrink-0">Meeting Audio</h2>
+                    <div className="h-full flex flex-col p-3 md:p-6">
+                        <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-gradient flex-shrink-0">Meeting Audio</h2>
 
                         {/* Group Meeting Audio */}
                         {meeting.type === 'group' && meeting.audio_file_url ? (
@@ -585,9 +590,35 @@ const MeetingDetail = () => {
 
     return (
         <div className="min-h-screen bg-black">
-            <div className="flex h-screen">
-                {/* Sidebar - Always visible */}
-                <div className="w-72 bg-black border-r border-white/10 flex flex-col flex-shrink-0">
+            <div className="flex h-screen overflow-hidden">
+                {/* Mobile Header */}
+                {!isMdUp && (
+                    <div className="fixed top-0 left-0 right-0 z-30 bg-black border-b border-white/10 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                            <button
+                                onClick={() => setIsNavOpen(true)}
+                                className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                                aria-label="Open navigation"
+                            >
+                                <Menu size={24} className="text-white" />
+                            </button>
+                            <h1 className="text-base font-bold text-gradient truncate flex-1">{meeting.title}</h1>
+                            <button
+                                onClick={() => setShowDeleteModal(true)}
+                                className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-lg transition-all"
+                                aria-label="Delete meeting"
+                            >
+                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Desktop Sidebar */}
+                {isMdUp && (
+                    <div className="w-64 lg:w-72 bg-black border-r border-white/10 flex flex-col flex-shrink-0">
                     {/* Header */}
                     <div className="p-6 border-b border-white/10">
                         <div className="flex items-center justify-between mb-4">
@@ -629,9 +660,52 @@ const MeetingDetail = () => {
                         </div>
                     </nav>
                 </div>
+                )}
+
+                {/* Mobile Navigation Drawer */}
+                {!isMdUp && (
+                    <MobileDrawer
+                        isOpen={isNavOpen}
+                        onClose={() => setIsNavOpen(false)}
+                    >
+                        {/* Header in Drawer */}
+                        <div className="mb-6 p-4 border-b border-white/10">
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="text-white/60 hover:text-white transition-colors flex items-center gap-2 mb-3"
+                            >
+                                <span>←</span>
+                                <span>Back to Dashboard</span>
+                            </button>
+                            <h2 className="text-xl font-bold text-gradient line-clamp-2">{meeting.title}</h2>
+                        </div>
+
+                        {/* Navigation Tabs */}
+                        <nav className="px-2">
+                            <div className="space-y-2">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => {
+                                            setActiveTab(tab.id);
+                                            setIsNavOpen(false);
+                                        }}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                                            activeTab === tab.id
+                                                ? 'bg-white/10 text-white border border-white/20 shadow-lg'
+                                                : 'text-white/60 hover:text-white hover:bg-white/5'
+                                        }`}
+                                    >
+                                        <span className="font-medium">{tab.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </nav>
+                    </MobileDrawer>
+                )}
 
                 {/* Main Content Area - Completely Full Space */}
-                <div className="flex-1 h-screen overflow-hidden">
+                <div className="flex-1 h-screen overflow-hidden" style={{ marginTop: isMdUp ? '0' : '56px' }}>
                     {activeTab === 'assistant' ? (
                         // Chatbot takes COMPLETE full space - NO padding, NO margin, NO wrapper
                         meeting.processed ? (
@@ -680,7 +754,7 @@ const MeetingDetail = () => {
                     ></div>
 
                     {/* Modal */}
-                    <div className="relative bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+                    <div className="relative bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 md:p-8 max-w-md w-full shadow-2xl mx-4">
                         {/* Warning Icon */}
                         <div className="flex justify-center mb-6">
                             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">

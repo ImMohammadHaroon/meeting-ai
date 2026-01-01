@@ -121,14 +121,14 @@ const CreateMeeting = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10">
+        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10 p-4 md:p-6">
             {/* Progress Popup Overlay */}
             {loading && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl p-8 space-y-8">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 space-y-6 md:space-y-8">
                         <div className="text-center space-y-2">
-                            <h3 className="text-xl font-medium text-white">Creating Meeting</h3>
-                            <p className="text-sm text-gray-500">Please wait while we set everything up.</p>
+                            <h3 className="text-lg md:text-xl font-medium text-white">Creating Meeting</h3>
+                            <p className="text-xs md:text-sm text-gray-500">Please wait while we set everything up.</p>
                         </div>
 
                         <div className="space-y-6">
@@ -192,49 +192,50 @@ const CreateMeeting = () => {
                 </div>
             )}
 
-            <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
                 {/* Header Navigation */}
-                <div className="mb-10 flex items-center justify-between">
+                <div className="mb-6 md:mb-10 flex items-center justify-between gap-4">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-white transition-all duration-300"
+                        className="group flex items-center gap-2 text-xs md:text-sm font-medium text-gray-500 hover:text-white transition-all duration-300 flex-shrink-0"
                     >
-                        <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 md:w-4 md:h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
-                        Back to Dashboard
+                        <span className="hidden sm:inline">Back to Dashboard</span>
+                        <span className="sm:hidden">Back</span>
                     </button>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent mx-8"></div>
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent mx-4 md:mx-8"></div>
                 </div>
 
                 <div className="relative">
                     {/* Background Glow Effect */}
                     <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
                     
-                    <div className="relative bg-[#0A0A0A] border border-white/5 rounded-2xl shadow-2xl overflow-hidden">
-                        <div className="p-8 md:p-12">
-                            <header className="mb-10">
-                                <h1 className="text-4xl font-light tracking-tight text-white mb-3">
+                    <div className="relative bg-[#0A0A0A] border border-white/5 rounded-xl md:rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="p-4 md:p-8 lg:p-12">
+                            <header className="mb-6 md:mb-10">
+                                <h1 className="text-2xl md:text-4xl font-light tracking-tight text-white mb-2 md:mb-3">
                                     Create New Meeting
                                 </h1>
-                                <p className="text-gray-500 text-sm">
+                                <p className="text-gray-500 text-xs md:text-sm">
                                     Configure your meeting details and upload participant recordings.
                                 </p>
                             </header>
 
                             {error && (
-                                <div className="mb-8 p-4 bg-red-500/5 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in fade-in slide-in-from-top-2">
-                                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="mb-6 md:mb-8 p-3 md:p-4 bg-red-500/5 border border-red-500/20 rounded-lg md:rounded-xl flex items-start md:items-center gap-2 md:gap-3 text-red-400 text-xs md:text-sm animate-in fade-in slide-in-from-top-2">
+                                    <svg className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5 md:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    {error}
+                                    <span>{error}</span>
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="space-y-10">
+                            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-10">
                                 {/* Basic Info Section */}
-                                <section className="space-y-6">
-                                    <div className="grid gap-6">
+                                <section className="space-y-4 md:space-y-6">
+                                    <div className="grid gap-4 md:gap-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 ml-1">
                                                 Meeting Title
@@ -243,7 +244,7 @@ const CreateMeeting = () => {
                                                 type="text"
                                                 value={title}
                                                 onChange={(e) => setTitle(e.target.value)}
-                                                className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
+                                                className="w-full bg-white/[0.02] border border-white/10 rounded-lg md:rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
                                                 placeholder="e.g., Strategic Q4 Planning"
                                                 required
                                             />
@@ -282,23 +283,23 @@ const CreateMeeting = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                                             {participants.map(user => {
                                                 const isSelected = selectedParticipants.includes(user.id);
                                                 return (
                                                     <label
                                                         key={user.id}
-                                                        className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${
+                                                        className={`group relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-lg md:rounded-xl border transition-all duration-300 cursor-pointer ${
                                                             isSelected 
                                                             ? 'bg-white/[0.04] border-white/20 shadow-lg' 
                                                             : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
                                                         }`}
                                                     >
-                                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                                                        <div className={`w-4 h-4 md:w-5 md:h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
                                                             isSelected ? 'bg-white border-white' : 'border-white/20 group-hover:border-white/40'
                                                         }`}>
                                                             {isSelected && (
-                                                                <svg className="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                                                 </svg>
                                                             )}
@@ -309,11 +310,11 @@ const CreateMeeting = () => {
                                                             onChange={() => handleParticipantToggle(user.id)}
                                                             className="hidden"
                                                         />
-                                                        <div className="flex flex-col min-w-0">
-                                                            <span className={`text-sm font-medium truncate transition-colors ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+                                                        <div className="flex flex-col min-w-0 flex-1">
+                                                            <span className={`text-xs md:text-sm font-medium truncate transition-colors ${isSelected ? 'text-white' : 'text-gray-400'}`}>
                                                                 {user.fullName}
                                                             </span>
-                                                            <span className="text-[11px] text-gray-600 truncate">
+                                                            <span className="text-[10px] md:text-[11px] text-gray-600 truncate">
                                                                 {user.email}
                                                             </span>
                                                         </div>
@@ -336,23 +337,23 @@ const CreateMeeting = () => {
                                             </p>
                                         </div>
                                         
-                                        <div className="space-y-4">
+                                        <div className="space-y-3 md:space-y-4">
                                             {selectedParticipants.map((participantId, index) => {
                                                 const participant = participants.find(p => p.id === participantId);
                                                 const hasFile = !!audioFiles[index];
                                                 return (
-                                                    <div key={participantId} className="group bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:border-white/10 transition-all duration-300">
-                                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${hasFile ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-gray-500'}`}>
+                                                    <div key={participantId} className="group bg-white/[0.02] border border-white/5 rounded-lg md:rounded-xl p-3 md:p-5 hover:border-white/10 transition-all duration-300">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4">
+                                                            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                                                                <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${hasFile ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-gray-500'}`}>
                                                                     {index + 1}
                                                                 </div>
-                                                                <span className="text-sm font-medium text-gray-300">
+                                                                <span className="text-xs md:text-sm font-medium text-gray-300 truncate">
                                                                     {participant?.fullName || 'Unknown User'}
                                                                 </span>
                                                             </div>
                                                             
-                                                            <div className="relative flex-1 max-w-md">
+                                                            <div className="relative flex-1 sm:max-w-xs">
                                                                 <input
                                                                     type="file"
                                                                     accept=".mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/mp4"
@@ -360,15 +361,15 @@ const CreateMeeting = () => {
                                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                                     required
                                                                 />
-                                                                <div className={`flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs transition-all duration-300 ${
+                                                                <div className={`flex items-center justify-between px-3 md:px-4 py-2 md:py-2.5 rounded-lg border text-xs transition-all duration-300 ${
                                                                     hasFile 
                                                                     ? 'bg-green-500/5 border-green-500/20 text-green-400' 
                                                                     : 'bg-white/5 border-white/10 text-gray-500 group-hover:border-white/20'
                                                                 }`}>
-                                                                    <span className="truncate max-w-[200px]">
+                                                                    <span className="truncate max-w-[150px] sm:max-w-[200px]">
                                                                         {hasFile ? audioFiles[index].name : 'Choose audio file...'}
                                                                     </span>
-                                                                    <svg className="w-4 h-4 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4 opacity-60 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                                                     </svg>
                                                                 </div>
@@ -382,16 +383,16 @@ const CreateMeeting = () => {
                                 )}
 
                                 {/* Action Buttons */}
-                                <footer className="pt-6 flex flex-col sm:flex-row gap-4">
+                                <footer className="pt-4 md:pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
                                     <button
                                         type="submit"
                                         disabled={loading || selectedParticipants.length === 0}
-                                        className="relative group flex-1 bg-white text-black font-semibold py-4 rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed"
+                                        className="relative group flex-1 bg-white text-black font-semibold py-3 md:py-4 rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed text-sm md:text-base"
                                     >
                                         <div className="relative z-10 flex items-center justify-center gap-2">
                                             {loading ? (
                                                 <>
-                                                    <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                                                    <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
                                                     <span>Processing...</span>
                                                 </>
                                             ) : (
@@ -402,7 +403,7 @@ const CreateMeeting = () => {
                                     <button
                                         type="button"
                                         onClick={() => navigate('/dashboard')}
-                                        className="px-8 py-4 rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
+                                        className="px-6 md:px-8 py-3 md:py-4 rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300 text-sm md:text-base"
                                     >
                                         Cancel
                                     </button>

@@ -65,19 +65,19 @@ const Dashboard = () => {
         >
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-4xl font-bold text-gradient">Meeting AI</h1>
-                    <div className="flex gap-4">
-                        <Link to="/create-meeting" className="btn-secondary">
-                            + Individual Meeting
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+                    <h1 className="text-2xl md:text-4xl font-bold text-gradient">Meeting AI</h1>
+                    <div className="flex flex-wrap gap-2 md:gap-4">
+                        <Link to="/create-meeting" className="btn-secondary text-sm md:text-base px-3 py-2 md:px-4 md:py-2 whitespace-nowrap">
+                            + Individual
                         </Link>
-                        <Link to="/create-group-meeting" className="btn-secondary">
-                            + Group Meeting
+                        <Link to="/create-group-meeting" className="btn-secondary text-sm md:text-base px-3 py-2 md:px-4 md:py-2 whitespace-nowrap">
+                            + Group
                         </Link>
-                        <Link to="/create-live-meeting" className="btn-primary">
-                            + Create Live Meeting
+                        <Link to="/create-live-meeting" className="btn-primary text-sm md:text-base px-3 py-2 md:px-4 md:py-2 whitespace-nowrap">
+                            + Live Meeting
                         </Link>
-                        <button onClick={handleSignOut} className="btn-secondary">
+                        <button onClick={handleSignOut} className="btn-secondary text-sm md:text-base px-3 py-2 md:px-4 md:py-2 whitespace-nowrap">
                             Sign Out
                         </button>
                     </div>
@@ -109,7 +109,7 @@ const Dashboard = () => {
                     </div>
                 ) : (
                     /* Meetings Grid */
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         {meetings.map((meeting) => (
                             <Link
                                 key={meeting.id}
@@ -119,20 +119,20 @@ const Dashboard = () => {
                                 {/* Delete Button */}
                                 <button
                                     onClick={(e) => handleDeleteMeeting(meeting.id, meeting.title, e)}
-                                    className="absolute top-4 right-4 p-2 bg-red-500/20 hover:bg-red-500/40 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
+                                    className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 bg-red-500/20 hover:bg-red-500/40 rounded-lg transition-all duration-300 opacity-100 sm:opacity-0 group-hover:opacity-100 z-10"
                                     title="Delete meeting"
                                 >
-                                    <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 md:w-5 md:h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                 </button>
 
-                                <div className="flex items-start justify-between mb-3 pr-8">
-                                    <h3 className="text-xl font-semibold group-hover:text-white/90">
+                                <div className="flex items-start justify-between mb-3 pr-10 md:pr-12">
+                                    <h3 className="text-lg md:text-xl font-semibold group-hover:text-white/90 line-clamp-2">
                                         {meeting.title}
                                     </h3>
                                     <span
-                                        className={`px-2 py-1 text-xs rounded-full ${meeting.processed
+                                        className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${meeting.processed
                                             ? 'bg-green-500/20 text-green-300'
                                             : 'bg-yellow-500/20 text-yellow-300'
                                             }`}
@@ -147,9 +147,9 @@ const Dashboard = () => {
                                     </p>
                                 )}
 
-                                <div className="flex items-center justify-between text-sm text-white/50">
+                                <div className="flex items-center justify-between text-xs md:text-sm text-white/50">
                                     <span>{new Date(meeting.created_at).toLocaleDateString()}</span>
-                                    <span className="group-hover:text-white/70 transition-colors">
+                                    <span className="group-hover:text-white/70 transition-colors hidden sm:inline">
                                         View Details →
                                     </span>
                                 </div>

@@ -119,14 +119,14 @@ const CreateGroupMeeting = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10">
+        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10 p-4 md:p-6">
             {/* Progress Popup Overlay */}
             {loading && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl p-8 space-y-8">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 space-y-6 md:space-y-8">
                         <div className="text-center space-y-2">
-                            <h3 className="text-xl font-medium text-white">Creating Group Meeting</h3>
-                            <p className="text-sm text-gray-500">Please wait while we process the group recording.</p>
+                            <h3 className="text-lg md:text-xl font-medium text-white">Creating Group Meeting</h3>
+                            <p className="text-xs md:text-sm text-gray-500">Please wait while we process the group recording.</p>
                         </div>
 
                         <div className="space-y-6">
@@ -187,12 +187,12 @@ const CreateGroupMeeting = () => {
                 </div>
             )}
 
-            <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
                 {/* Header Navigation */}
-                <div className="mb-10 flex items-center justify-between">
+                <div className="mb-6 md:mb-10 flex items-center justify-between gap-4">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-white transition-all duration-300"
+                        className="group flex items-center gap-2 text-xs md:text-sm font-medium text-gray-500 hover:text-white transition-all duration-300 flex-shrink-0"
                     >
                         <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -207,9 +207,9 @@ const CreateGroupMeeting = () => {
                     <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                     <div className="relative bg-[#0A0A0A] border border-white/5 rounded-2xl shadow-2xl overflow-hidden">
-                        <div className="p-8 md:p-12">
-                            <header className="mb-10">
-                                <h1 className="text-4xl font-light tracking-tight text-white mb-3">
+                        <div className="p-6 md:p-8 lg:p-12">
+                            <header className="mb-8 md:mb-10">
+                                <h1 className="text-2xl md:text-4xl font-light tracking-tight text-white mb-3">
                                     Create Group Meeting
                                 </h1>
                                 <p className="text-gray-500 text-sm">
@@ -238,7 +238,7 @@ const CreateGroupMeeting = () => {
                                                 type="text"
                                                 value={title}
                                                 onChange={(e) => setTitle(e.target.value)}
-                                                className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
+                                                className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
                                                 placeholder="e.g., Team Sync Up"
                                                 required
                                             />
@@ -251,7 +251,7 @@ const CreateGroupMeeting = () => {
                                             <textarea
                                                 value={description}
                                                 onChange={(e) => setDescription(e.target.value)}
-                                                className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300 h-32 resize-none"
+                                                className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300 h-32 resize-none"
                                                 placeholder="Agenda and key points..."
                                             />
                                         </div>
@@ -277,21 +277,21 @@ const CreateGroupMeeting = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                                             {participants.map(user => {
                                                 const isSelected = selectedParticipants.includes(user.id);
                                                 return (
                                                     <label
                                                         key={user.id}
-                                                        className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${isSelected
+                                                        className={`group relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border transition-all duration-300 cursor-pointer ${isSelected
                                                                 ? 'bg-white/[0.04] border-white/20 shadow-lg'
                                                                 : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
                                                             }`}
                                                     >
-                                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-white border-white' : 'border-white/20 group-hover:border-white/40'
+                                                        <div className={`w-4 h-4 md:w-5 md:h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${isSelected ? 'bg-white border-white' : 'border-white/20 group-hover:border-white/40'
                                                             }`}>
                                                             {isSelected && (
-                                                                <svg className="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                                                 </svg>
                                                             )}
@@ -303,7 +303,7 @@ const CreateGroupMeeting = () => {
                                                             className="hidden"
                                                         />
                                                         <div className="flex flex-col min-w-0">
-                                                            <span className={`text-sm font-medium truncate transition-colors ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+                                                            <span className={`text-xs md:text-sm font-medium truncate transition-colors ${isSelected ? 'text-white' : 'text-gray-400'}`}>
                                                                 {user.fullName}
                                                             </span>
                                                             <span className="text-[11px] text-gray-600 truncate">
@@ -329,14 +329,14 @@ const CreateGroupMeeting = () => {
                                         </p>
                                     </div>
 
-                                    <div className="group bg-white/[0.02] border border-white/5 rounded-xl p-5 hover:border-white/10 transition-all duration-300">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${audioFile ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-gray-500'}`}>
+                                    <div className="group bg-white/[0.02] border border-white/5 rounded-xl p-4 md:p-5 hover:border-white/10 transition-all duration-300">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+                                            <div className="flex items-center gap-2 md:gap-3">
+                                                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-base md:text-lg ${audioFile ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-gray-500'}`}>
                                                     🎙️
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-medium text-gray-300">
+                                                    <span className="text-xs md:text-sm font-medium text-gray-300">
                                                         Full Meeting Recording
                                                     </span>
                                                     {audioFile && (
@@ -347,7 +347,7 @@ const CreateGroupMeeting = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="relative flex-1 max-w-md">
+                                            <div className="relative flex-1 max-w-full md:max-w-md">
                                                 <input
                                                     type="file"
                                                     accept=".mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/mp4"
@@ -355,7 +355,7 @@ const CreateGroupMeeting = () => {
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                     required
                                                 />
-                                                <div className={`flex items-center justify-between px-4 py-2.5 rounded-lg border text-xs transition-all duration-300 ${audioFile
+                                                <div className={`flex items-center justify-between px-3 md:px-4 py-2 md:py-2.5 rounded-lg border text-xs transition-all duration-300 ${audioFile
                                                         ? 'bg-green-500/5 border-green-500/20 text-green-400'
                                                         : 'bg-white/5 border-white/10 text-gray-500 group-hover:border-white/20'
                                                     }`}>
@@ -372,11 +372,11 @@ const CreateGroupMeeting = () => {
                                 </section>
 
                                 {/* Action Buttons */}
-                                <footer className="pt-6 flex flex-col sm:flex-row gap-4">
+                                <footer className="pt-4 md:pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
                                     <button
                                         type="submit"
                                         disabled={loading || selectedParticipants.length === 0 || !audioFile}
-                                        className="relative group flex-1 bg-white text-black font-semibold py-4 rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed"
+                                        className="relative group flex-1 bg-white text-black font-semibold py-3 md:py-4 text-sm md:text-base rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed"
                                     >
                                         <div className="relative z-10 flex items-center justify-center gap-2">
                                             {loading ? (
@@ -392,7 +392,7 @@ const CreateGroupMeeting = () => {
                                     <button
                                         type="button"
                                         onClick={() => navigate('/dashboard')}
-                                        className="px-8 py-4 rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
+                                        className="px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300">
                                     >
                                         Cancel
                                     </button>

@@ -148,13 +148,13 @@ const CreateLiveMeeting = () => {
 
     if (createdMeeting) {
         return (
-            <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10">
-                <div className="max-w-3xl mx-auto px-6 py-12">
+            <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10 p-4 md:p-6">
+                <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-12">
                     {/* Header Navigation */}
-                    <div className="mb-10 flex items-center justify-between">
+                    <div className="mb-6 md:mb-10 flex items-center justify-between gap-4">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-white transition-all duration-300"
+                            className="group flex items-center gap-2 text-xs md:text-sm font-medium text-gray-500 hover:text-white transition-all duration-300 flex-shrink-0"
                         >
                             <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -169,15 +169,15 @@ const CreateLiveMeeting = () => {
                         <div className="absolute -top-24 -left-24 w-96 h-96 bg-green-500/10 rounded-full blur-[120px] pointer-events-none"></div>
 
                         <div className="relative bg-[#0A0A0A] border border-white/5 rounded-2xl shadow-2xl overflow-hidden">
-                            <div className="p-8 md:p-12">
+                            <div className="p-6 md:p-8 lg:p-12">
                                 {/* Success Icon */}
-                                <div className="text-center mb-10">
-                                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-500/10 border border-green-500/20 mb-6">
-                                        <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="text-center mb-8 md:mb-10">
+                                    <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-green-500/10 border border-green-500/20 mb-4 md:mb-6">
+                                        <svg className="w-8 h-8 md:w-10 md:h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                     </div>
-                                    <h1 className="text-4xl font-light tracking-tight text-white mb-3">
+                                    <h1 className="text-2xl md:text-4xl font-light tracking-tight text-white mb-3">
                                         Live Meeting Created
                                     </h1>
                                     <p className="text-gray-500 text-sm">
@@ -185,10 +185,10 @@ const CreateLiveMeeting = () => {
                                     </p>
                                 </div>
 
-                                <div className="space-y-8">
+                                <div className="space-y-6 md:space-y-8">
                                     {/* Meeting Details */}
-                                    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-6">
-                                        <h2 className="text-2xl font-medium text-white mb-2">
+                                    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 md:p-6">
+                                        <h2 className="text-xl md:text-2xl font-medium text-white mb-2">
                                             {createdMeeting.meeting.title}
                                         </h2>
                                         {createdMeeting.meeting.description && (
@@ -203,16 +203,16 @@ const CreateLiveMeeting = () => {
                                         <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 ml-1">
                                             Meeting Join Link
                                         </label>
-                                        <div className="flex gap-3">
+                                        <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
                                             <input
                                                 type="text"
                                                 value={createdMeeting.joinUrl}
                                                 readOnly
-                                                className="flex-1 bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
+                                                className="flex-1 bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-white text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
                                             />
                                             <button
                                                 onClick={copyJoinUrl}
-                                                className="px-6 py-4 rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white hover:border-white/20 transition-all duration-300"
+                                                className="px-4 md:px-6 py-3 md:py-4 text-sm rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white hover:border-white/20 transition-all duration-300"
                                             >
                                                 Copy
                                             </button>
@@ -233,10 +233,10 @@ const CreateLiveMeeting = () => {
                                     )}
 
                                     {/* Action Buttons */}
-                                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                    <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-4">
                                         <button
                                             onClick={handleStartMeeting}
-                                            className="flex-1 relative group bg-green-600 text-white font-semibold py-4 rounded-xl overflow-hidden transition-all duration-300 hover:bg-green-700"
+                                            className="flex-1 relative group bg-green-600 text-white font-semibold py-3 md:py-4 text-sm md:text-base rounded-xl overflow-hidden transition-all duration-300 hover:bg-green-700"
                                         >
                                             <div className="relative z-10 flex items-center justify-center gap-2">
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,7 +248,7 @@ const CreateLiveMeeting = () => {
                                         </button>
                                         <button
                                             onClick={() => navigate('/dashboard')}
-                                            className="px-8 py-4 rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
+                                            className="px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
                                         >
                                             Back to Dashboard
                                         </button>
@@ -263,14 +263,14 @@ const CreateLiveMeeting = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10">
+        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10 p-4 md:p-6">
             {/* Progress Popup Overlay */}
             {loading && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl p-8 space-y-8">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 space-y-6 md:space-y-8">
                         <div className="text-center space-y-2">
-                            <h3 className="text-xl font-medium text-white">Creating Live Meeting</h3>
-                            <p className="text-sm text-gray-500">Setting up your online meeting room...</p>
+                            <h3 className="text-lg md:text-xl font-medium text-white">Creating Live Meeting</h3>
+                            <p className="text-xs md:text-sm text-gray-500">Setting up your online meeting room...</p>
                         </div>
 
                         <div className="space-y-6">
@@ -301,12 +301,12 @@ const CreateLiveMeeting = () => {
                 </div>
             )}
 
-            <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
                 {/* Header Navigation */}
-                <div className="mb-10 flex items-center justify-between">
+                <div className="mb-6 md:mb-10 flex items-center justify-between gap-4">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="group flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-white transition-all duration-300"
+                        className="group flex items-center gap-2 text-xs md:text-sm font-medium text-gray-500 hover:text-white transition-all duration-300 flex-shrink-0"
                     >
                         <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -321,16 +321,16 @@ const CreateLiveMeeting = () => {
                     <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                     <div className="relative bg-[#0A0A0A] border border-white/5 rounded-2xl shadow-2xl overflow-hidden">
-                        <div className="p-8 md:p-12">
+                        <div className="p-6 md:p-8 lg:p-12">
                             {/* Mode Toggle Tabs */}
-                            <div className="mb-10 flex gap-2 p-1.5 bg-white/[0.02] border border-white/5 rounded-xl">
+                            <div className="mb-8 md:mb-10 flex gap-2 p-1.5 bg-white/[0.02] border border-white/5 rounded-xl">
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setMode('create');
                                         setUrlError('');
                                     }}
-                                    className={`flex-1 py-3 px-6 rounded-lg font-medium text-sm transition-all duration-300 ${mode === 'create'
+                                    className={`flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-medium text-xs md:text-sm transition-all duration-300 ${mode === 'create'
                                         ? 'bg-white text-black shadow-lg'
                                         : 'text-gray-500 hover:text-gray-300'
                                         }`}
@@ -343,7 +343,7 @@ const CreateLiveMeeting = () => {
                                         setMode('join');
                                         setError('');
                                     }}
-                                    className={`flex-1 py-3 px-6 rounded-lg font-medium text-sm transition-all duration-300 ${mode === 'join'
+                                    className={`flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-medium text-xs md:text-sm transition-all duration-300 ${mode === 'join'
                                         ? 'bg-white text-black shadow-lg'
                                         : 'text-gray-500 hover:text-gray-300'
                                         }`}
@@ -352,8 +352,8 @@ const CreateLiveMeeting = () => {
                                 </button>
                             </div>
 
-                            <header className="mb-10">
-                                <h1 className="text-4xl font-light tracking-tight text-white mb-3">
+                            <header className="mb-8 md:mb-10">
+                                <h1 className="text-2xl md:text-4xl font-light tracking-tight text-white mb-3">
                                     {mode === 'create' ? 'Create Live Meeting' : 'Join Live Meeting'}
                                 </h1>
                                 <p className="text-gray-500 text-sm">
@@ -388,7 +388,7 @@ const CreateLiveMeeting = () => {
                                                         setMeetingUrl(e.target.value);
                                                         setUrlError('');
                                                     }}
-                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
+                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
                                                     placeholder="https://yourapp.com/live-meeting/12345"
                                                     required
                                                 />
@@ -419,10 +419,10 @@ const CreateLiveMeeting = () => {
                                         </div>
                                     </section>
 
-                                    <footer className="pt-6 flex flex-col sm:flex-row gap-4">
+                                    <footer className="pt-4 md:pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
                                         <button
                                             type="submit"
-                                            className="relative group flex-1 bg-white text-black font-semibold py-4 rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200"
+                                            className="relative group flex-1 bg-white text-black font-semibold py-3 md:py-4 text-sm md:text-base rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200"
                                         >
                                             <div className="relative z-10 flex items-center justify-center gap-2">
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -434,7 +434,7 @@ const CreateLiveMeeting = () => {
                                         <button
                                             type="button"
                                             onClick={() => navigate('/dashboard')}
-                                            className="px-8 py-4 rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
+                                            className="px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
                                         >
                                             Cancel
                                         </button>
@@ -456,7 +456,7 @@ const CreateLiveMeeting = () => {
                                                     type="text"
                                                     value={title}
                                                     onChange={(e) => setTitle(e.target.value)}
-                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
+                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
                                                     placeholder="e.g., Team Daily Standup"
                                                     maxLength={200}
                                                     required
@@ -470,7 +470,7 @@ const CreateLiveMeeting = () => {
                                                 <textarea
                                                     value={description}
                                                     onChange={(e) => setDescription(e.target.value)}
-                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300 h-32 resize-none"
+                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300 h-32 resize-none"
                                                     placeholder="Add meeting agenda or objectives..."
                                                     maxLength={1000}
                                                 />
@@ -497,21 +497,21 @@ const CreateLiveMeeting = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                                                 {participants.map(user => {
                                                     const isSelected = selectedParticipants.includes(user.id);
                                                     return (
                                                         <label
                                                             key={user.id}
-                                                            className={`group relative flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer ${isSelected
+                                                            className={`group relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border transition-all duration-300 cursor-pointer ${isSelected
                                                                 ? 'bg-white/[0.04] border-white/20 shadow-lg'
                                                                 : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
                                                                 }`}
                                                         >
-                                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-white border-white' : 'border-white/20 group-hover:border-white/40'
+                                                            <div className={`w-4 h-4 md:w-5 md:h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${isSelected ? 'bg-white border-white' : 'border-white/20 group-hover:border-white/40'
                                                                 }`}>
                                                                 {isSelected && (
-                                                                    <svg className="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                                                     </svg>
                                                                 )}
@@ -523,7 +523,7 @@ const CreateLiveMeeting = () => {
                                                                 className="hidden"
                                                             />
                                                             <div className="flex flex-col min-w-0">
-                                                                <span className={`text-sm font-medium truncate transition-colors ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+                                                                <span className={`text-xs md:text-sm font-medium truncate transition-colors ${isSelected ? 'text-white' : 'text-gray-400'}`}>
                                                                     {user.fullName || user.name || 'User'}
                                                                 </span>
                                                                 <span className="text-[11px] text-gray-600 truncate">
@@ -538,11 +538,11 @@ const CreateLiveMeeting = () => {
                                     </section>
 
                                     {/* Action Buttons */}
-                                    <footer className="pt-6 flex flex-col sm:flex-row gap-4">
+                                    <footer className="pt-4 md:pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
                                         <button
                                             type="submit"
                                             disabled={loading || selectedParticipants.length === 0}
-                                            className="relative group flex-1 bg-white text-black font-semibold py-4 rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed"
+                                            className="relative group flex-1 bg-white text-black font-semibold py-3 md:py-4 text-sm md:text-base rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed"
                                         >
                                             <div className="relative z-10 flex items-center justify-center gap-2">
                                                 {loading ? (
@@ -558,7 +558,7 @@ const CreateLiveMeeting = () => {
                                         <button
                                             type="button"
                                             onClick={() => navigate('/dashboard')}
-                                            className="px-8 py-4 rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
+                                            className="px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
                                         >
                                             Cancel
                                         </button>
