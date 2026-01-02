@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { supabase } from './supabase';
 
-const API_URL = import.meta.env.VITE_API_URL;
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://meeting-ai-seven.vercel.app';
+// Use environment variables for production, fallback to localhost for development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 
 // Create axios instance
 const api = axios.create({
