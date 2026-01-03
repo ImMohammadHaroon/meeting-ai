@@ -23,8 +23,8 @@ const httpServer = createServer(app);
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5000',
-    'https://meeting-ai-wn5o.vercel.app', // Frontend Vercel URL
-    'https://meeting-ai-seven.vercel.app', // Backend Vercel URL (for self-requests)
+    'https://meeting-ai-psi.vercel.app', // Frontend Vercel URL
+    'https://meeting-ai-3kyx.onrender.com', // Backend Render URL
     process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
 
