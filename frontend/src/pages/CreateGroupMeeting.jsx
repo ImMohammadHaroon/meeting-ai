@@ -284,8 +284,8 @@ const CreateGroupMeeting = () => {
                                                     <label
                                                         key={user.id}
                                                         className={`group relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border transition-all duration-300 cursor-pointer ${isSelected
-                                                                ? 'bg-white/[0.04] border-white/20 shadow-lg'
-                                                                : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
+                                                            ? 'bg-white/[0.04] border-white/20 shadow-lg'
+                                                            : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
                                                             }`}
                                                     >
                                                         <div className={`w-4 h-4 md:w-5 md:h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${isSelected ? 'bg-white border-white' : 'border-white/20 group-hover:border-white/40'
@@ -356,8 +356,8 @@ const CreateGroupMeeting = () => {
                                                     required
                                                 />
                                                 <div className={`flex items-center justify-between px-3 md:px-4 py-2 md:py-2.5 rounded-lg border text-xs transition-all duration-300 ${audioFile
-                                                        ? 'bg-green-500/5 border-green-500/20 text-green-400'
-                                                        : 'bg-white/5 border-white/10 text-gray-500 group-hover:border-white/20'
+                                                    ? 'bg-green-500/5 border-green-500/20 text-green-400'
+                                                    : 'bg-white/5 border-white/10 text-gray-500 group-hover:border-white/20'
                                                     }`}>
                                                     <span className="truncate max-w-[200px]">
                                                         {audioFile ? 'Change file' : 'Choose audio file...'}
@@ -393,7 +393,6 @@ const CreateGroupMeeting = () => {
                                         type="button"
                                         onClick={() => navigate('/dashboard')}
                                         className="px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300">
-                                    >
                                         Cancel
                                     </button>
                                 </footer>
