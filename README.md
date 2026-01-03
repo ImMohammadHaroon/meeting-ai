@@ -2,10 +2,17 @@
 
 A production-ready meeting management application with AI-powered transcription, notes generation, task extraction, and context-aware chatbot.
 
+## 🚀 Quick Deploy
+
+**For deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)**
+
+⚠️ **Important**: This app uses Socket.io for live meetings. Vercel serverless functions don't support WebSockets. Deploy the backend to Railway/Render for full functionality.
+
 ## Features
 
 - **Authentication**: Secure user authentication with Supabase
 - **Meeting Management**: Create meetings with multiple participants
+- **Live Meetings**: Real-time WebRTC video/audio calls
 - **Audio Transcription**: Automatic transcription using Groq Whisper API
 - **AI-Generated Notes**: Smart meeting notes and summaries
 - **Task Extraction**: Automatically extract action items with assignees

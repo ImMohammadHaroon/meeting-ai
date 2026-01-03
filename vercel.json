@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "name": "meeting-ai",
+  "public": false,
+  "github": {
+    "enabled": true,
+    "autoAlias": true,
+    "silent": false,
+    "autoJobCancelation": true
+  }
+}
