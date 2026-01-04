@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../services/api';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://meeting-ai-seven.vercel.app';
 
 // ICE servers configuration (Google STUN servers)
 const ICE_SERVERS = {
@@ -35,7 +35,11 @@ export const useWebRTC = (roomId, userId, userName) => {
 
         // Initialize socket connection
         const socket = io(SOCKET_URL, {
-            transports: ['websocket', 'polling']
+            transports: ['websocket', 'polling'],
+            withCredentials: true,
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 5
         });
         socketRef.current = socket;
 
@@ -52,6 +56,10 @@ export const useWebRTC = (roomId, userId, userName) => {
 
         socket.on('connect_error', (err) => {
             console.error('Socket connection error:', err);
+            const isCorsError = err.message.includes('CORS') || err.message.includes('cors');
+            if (isCorsError) {
+                console.error('Socket.io CORS Error:', err.message);
+            }
             setError('Failed to connect to server');
         });
 

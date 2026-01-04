@@ -2,8 +2,57 @@ import axios from 'axios';
 import { supabase } from './supabase';
 
 // Use environment variables for production, fallback to localhost for development
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+// Auto-detect backend URL based on current environment
+const getBackendUrl = () => {
+    // If environment variable is set, use it
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+    }
+    
+    // If running on custom domain or Vercel, try to infer backend URL
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        // If on custom domain or Vercel domain, use Render backend
+        if (hostname.includes('meetingai.dev') || hostname.includes('vercel.app')) {
+            return 'https://meeting-ai-3kyx.onrender.com/api';
+        }
+    }
+    
+    // Default to localhost for development
+    return 'http://localhost:5000/api';
+};
+
+const getSocketUrl = () => {
+    // If environment variable is set, use it
+    if (import.meta.env.VITE_SOCKET_URL) {
+        return import.meta.env.VITE_SOCKET_URL;
+    }
+    
+    // If running on custom domain or Vercel, try to infer backend URL
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        // If on custom domain or Vercel domain, use Render backend
+        if (hostname.includes('meetingai.dev') || hostname.includes('vercel.app')) {
+            return 'https://meeting-ai-3kyx.onrender.com';
+        }
+    }
+    
+    // Default to localhost for development
+    return 'http://localhost:5000';
+};
+
+const API_URL = getBackendUrl();
+export const SOCKET_URL = getSocketUrl();
+
+// Log environment variable status in development
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+    if (!import.meta.env.VITE_API_URL) {
+        console.warn('VITE_API_URL not set! Using auto-detected:', API_URL);
+    }
+    if (!import.meta.env.VITE_SOCKET_URL) {
+        console.warn('VITE_SOCKET_URL not set! Using auto-detected:', SOCKET_URL);
+    }
+}
 
 // Create axios instance
 const api = axios.create({
@@ -12,6 +61,23 @@ const api = axios.create({
         'Content-Type': 'application/json'
     }
 });
+
+// Add response interceptor to log errors
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        // Log CORS errors with helpful information
+        if (typeof window !== 'undefined') {
+            const isCorsError = error.message.includes('CORS') || error.message.includes('cors') || error.code === 'ERR_NETWORK';
+            if (isCorsError) {
+                console.error('CORS Error:', error.message);
+                console.error('Request Origin:', window.location.origin);
+                console.error('API URL:', API_URL);
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
