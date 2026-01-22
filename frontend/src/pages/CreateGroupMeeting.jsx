@@ -53,11 +53,11 @@ const CreateGroupMeeting = () => {
         if (!file) return;
 
         // Validate file type
-        const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/mp4'];
-        const isValidType = allowedTypes.includes(file.type) || file.name.match(/\.(mp3|wav|m4a)$/i);
+        const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/mp4', 'audio/ogg'];
+        const isValidType = allowedTypes.includes(file.type) || file.name.match(/\.(mp3|wav|m4a|ogg)$/i);
 
         if (!isValidType) {
-            setError('Only MP3, WAV, and M4A files are allowed');
+            setError('Only MP3, WAV, M4A, and OGG files are allowed');
             return;
         }
 
@@ -350,7 +350,7 @@ const CreateGroupMeeting = () => {
                                             <div className="relative flex-1 max-w-full md:max-w-md">
                                                 <input
                                                     type="file"
-                                                    accept=".mp3,.wav,.m4a,audio/mpeg,audio/wav,audio/mp4"
+                                                    accept=".mp3,.wav,.m4a,.ogg,audio/mpeg,audio/wav,audio/mp4,audio/ogg"
                                                     onChange={handleFileChange}
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                     required

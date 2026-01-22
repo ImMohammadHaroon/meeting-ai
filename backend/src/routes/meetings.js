@@ -15,11 +15,11 @@ const upload = multer({
         files: 10
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/mp4'];
-        if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(mp3|wav|m4a)$/i)) {
+        const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/mp4', 'audio/ogg'];
+        if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(mp3|wav|m4a|ogg)$/i)) {
             cb(null, true);
         } else {
-            cb(new Error('Invalid file type. Only MP3, WAV, and M4A files are allowed'));
+            cb(new Error('Invalid file type. Only MP3, WAV, M4A, and OGG files are allowed'));
         }
     }
 });

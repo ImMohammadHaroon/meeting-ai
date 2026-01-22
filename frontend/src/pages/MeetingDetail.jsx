@@ -306,6 +306,7 @@ const MeetingDetail = () => {
                                             <source src={meeting.audio_file_url} type="audio/wav" />
                                             <source src={meeting.audio_file_url} type="audio/mp4" />
                                             <source src={meeting.audio_file_url} type="audio/webm" />
+                                            <source src={meeting.audio_file_url} type="audio/ogg" />
                                             Your browser does not support the audio element.
                                         </audio>
                                     </div>
@@ -345,6 +346,7 @@ const MeetingDetail = () => {
                                                     <source src={participant.audio_file_url} type="audio/mpeg" />
                                                     <source src={participant.audio_file_url} type="audio/wav" />
                                                     <source src={participant.audio_file_url} type="audio/mp4" />
+                                                    <source src={participant.audio_file_url} type="audio/ogg" />
                                                     Your browser does not support the audio element.
                                                 </audio>
                                             </div>

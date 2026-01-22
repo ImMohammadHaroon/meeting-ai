@@ -15,8 +15,8 @@ const upload = multer({
         fileSize: 100 * 1024 * 1024, // 100MB for live recordings
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['audio/webm', 'audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/mp4'];
-        if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(webm|mp3|wav|mp4)$/i)) {
+        const allowedTypes = ['audio/webm', 'audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/mp4', 'audio/ogg'];
+        if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(webm|mp3|wav|mp4|ogg)$/i)) {
             cb(null, true);
         } else {
             cb(new Error('Invalid file type. Only audio files are allowed'));
