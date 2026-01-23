@@ -8,7 +8,7 @@ const getBackendUrl = () => {
     if (import.meta.env.VITE_API_URL) {
         return import.meta.env.VITE_API_URL;
     }
-    
+
     // If running on custom domain or Vercel, try to infer backend URL
     if (typeof window !== 'undefined') {
         const hostname = window.location.hostname;
@@ -17,7 +17,7 @@ const getBackendUrl = () => {
             return 'https://meeting-ai-3kyx.onrender.com/api';
         }
     }
-    
+
     // Default to localhost for development
     return 'http://localhost:5000/api';
 };
@@ -27,7 +27,7 @@ const getSocketUrl = () => {
     if (import.meta.env.VITE_SOCKET_URL) {
         return import.meta.env.VITE_SOCKET_URL;
     }
-    
+
     // If running on custom domain or Vercel, try to infer backend URL
     if (typeof window !== 'undefined') {
         const hostname = window.location.hostname;
@@ -36,7 +36,7 @@ const getSocketUrl = () => {
             return 'https://meeting-ai-3kyx.onrender.com';
         }
     }
-    
+
     // Default to localhost for development
     return 'http://localhost:5000';
 };
@@ -163,6 +163,39 @@ export const meetingsAPI = {
 
     delete: async (id) => {
         const response = await api.delete(`/meetings/${id}`);
+        return response.data;
+    }
+};
+
+// Organizations API
+export const organizationsAPI = {
+    create: async (name) => {
+        const response = await api.post('/organizations', { name });
+        return response.data;
+    },
+
+    join: async (inviteCode) => {
+        const response = await api.post('/organizations/join', { inviteCode });
+        return response.data;
+    },
+
+    getMyOrg: async () => {
+        const response = await api.get('/organizations/me');
+        return response.data;
+    },
+
+    getMembers: async () => {
+        const response = await api.get('/organizations/members');
+        return response.data;
+    },
+
+    regenerateInvite: async () => {
+        const response = await api.post('/organizations/regenerate-invite');
+        return response.data;
+    },
+
+    sendInvite: async (email) => {
+        const response = await api.post('/organizations/invite', { email });
         return response.data;
     }
 };

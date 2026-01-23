@@ -1,18 +1,55 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { meetingsAPI } from '../services/api';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { meetingsAPI, organizationsAPI } from '../services/api';
 import { supabase } from '../services/supabase';
+import OrganizationSetupModal from '../components/OrganizationSetupModal';
+import OrganizationPanel from '../components/OrganizationPanel';
 import meetingBg from '../assets/meeting.png';
 
 const Dashboard = () => {
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [organization, setOrganization] = useState(null);
+    const [userRole, setUserRole] = useState(null);
+    const [showOrgModal, setShowOrgModal] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
+        // Check if we need to show org setup modal from navigation state
+        if (location.state?.showOrgSetup) {
+            setShowOrgModal(true);
+            setUserEmail(location.state.userEmail || '');
+            // Clear the state to prevent showing modal on refresh
+            window.history.replaceState({}, document.title);
+        }
+
         fetchMeetings();
-    }, []);
+        fetchOrganization();
+    }, [location.state]);
+
+    const fetchOrganization = async () => {
+        try {
+            const { organization, role } = await organizationsAPI.getMyOrg();
+            setOrganization(organization);
+            setUserRole(role);
+            // If no org and modal not already triggered, show it
+            if (!organization && !location.state?.showOrgSetup) {
+                const { data: { user } } = await supabase.auth.getUser();
+                setUserEmail(user?.email || '');
+                setShowOrgModal(true);
+            }
+        } catch (error) {
+            console.error('Failed to fetch organization:', error);
+        }
+    };
+
+    const handleOrgSetupComplete = (org) => {
+        setOrganization(org);
+        setShowOrgModal(false);
+    };
 
     const fetchMeetings = async () => {
         try {
@@ -36,7 +73,7 @@ const Dashboard = () => {
     };
 
     const handleDeleteMeeting = async (meetingId, meetingTitle, e) => {
-        e.preventDefault(); // Prevent navigation to meeting detail
+        e.preventDefault();
         e.stopPropagation();
 
         if (!confirm(`Are you sure you want to delete "${meetingTitle}"? This action cannot be undone.`)) {
@@ -45,7 +82,6 @@ const Dashboard = () => {
 
         try {
             await meetingsAPI.delete(meetingId);
-            // Refresh the meetings list
             await fetchMeetings();
         } catch (error) {
             console.error('Failed to delete meeting:', error);
@@ -63,10 +99,31 @@ const Dashboard = () => {
                 backgroundRepeat: 'no-repeat'
             }}
         >
+            {/* Organization Setup Modal */}
+            <OrganizationSetupModal
+                isOpen={showOrgModal}
+                onComplete={handleOrgSetupComplete}
+                userEmail={userEmail}
+            />
+
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
-                    <h1 className="text-2xl md:text-4xl font-bold text-gradient">Meeting AI</h1>
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-2xl md:text-4xl font-bold text-gradient">Meeting AI</h1>
+                        {organization && (
+                            <>
+                                <span className="px-3 py-1 bg-white/10 border border-white/20 rounded-full text-xs text-white/70">
+                                    {organization.name}
+                                </span>
+                                <OrganizationPanel
+                                    organization={organization}
+                                    userRole={userRole}
+                                    onUpdate={(updatedOrg) => setOrganization(updatedOrg)}
+                                />
+                            </>
+                        )}
+                    </div>
                     <div className="flex flex-wrap gap-2 md:gap-4">
                         <Link to="/create-meeting" className="btn-secondary text-sm md:text-base px-3 py-2 md:px-4 md:py-2 whitespace-nowrap">
                             + Individual

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../services/supabase';
+import { organizationsAPI } from '../services/api';
 import signInSignUpBg from '../assets/signin-signup.png';
 
 const SignUp = () => {
@@ -29,8 +30,19 @@ const SignUp = () => {
 
             if (error) throw error;
 
-            // Navigate to dashboard after successful signup
-            navigate('/dashboard');
+            // Check if user has an organization
+            try {
+                const { organization } = await organizationsAPI.getMyOrg();
+                if (!organization) {
+                    // New user without org - show setup modal
+                    navigate('/dashboard', { state: { showOrgSetup: true, userEmail: email } });
+                } else {
+                    navigate('/dashboard');
+                }
+            } catch {
+                // If org check fails, redirect with setup prompt
+                navigate('/dashboard', { state: { showOrgSetup: true, userEmail: email } });
+            }
         } catch (error) {
             setError(error.message);
         } finally {
