@@ -373,7 +373,10 @@ router.post('/invite', authMiddleware, async (req, res) => {
                 error: 'Email service not configured. Please contact administrator.'
             });
         }
-        res.status(500).json({ error: 'Failed to send invitation' });
+        res.status(500).json({
+            error: 'Failed to send invitation',
+            details: error.message // Exposed for debugging
+        });
     }
 });
 

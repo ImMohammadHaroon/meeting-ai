@@ -36,6 +36,11 @@ const createTransporter = () => {
 };
 
 const transporter = createTransporter();
+if (transporter) {
+    console.log('✅ Email service configured successfully');
+} else {
+    console.log('❌ Email service NOT configured');
+}
 
 /**
  * Send organization invitation email

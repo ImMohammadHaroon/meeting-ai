@@ -197,6 +197,11 @@ export const organizationsAPI = {
     sendInvite: async (email) => {
         const response = await api.post('/organizations/invite', { email });
         return response.data;
+    },
+
+    removeMember: async (userId) => {
+        const response = await api.delete(`/organizations/members/${userId}`);
+        return response.data;
     }
 };
 

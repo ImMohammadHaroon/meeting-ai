@@ -76,6 +76,19 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
         }
     };
 
+    const handleRemoveMember = async (userId, userName) => {
+        if (!confirm(`Are you sure you want to remove ${userName} from the organization?`)) return;
+
+        try {
+            await organizationsAPI.removeMember(userId);
+            // Update list locally
+            setMembers(prev => prev.filter(m => m.id !== userId));
+        } catch (error) {
+            console.error('Failed to remove member:', error);
+            alert('Failed to remove member');
+        }
+    };
+
     if (!organization) return null;
 
     return (
@@ -154,8 +167,8 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
                                     <button
                                         onClick={handleCopyCode}
                                         className={`p-3 rounded-xl border transition-all ${copied
-                                                ? 'bg-green-500/20 border-green-500/30 text-green-400'
-                                                : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
+                                            ? 'bg-green-500/20 border-green-500/30 text-green-400'
+                                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white'
                                             }`}
                                         title="Copy invite code"
                                     >
@@ -210,12 +223,25 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
                                                         <p className="text-xs text-gray-500">{member.email}</p>
                                                     </div>
                                                 </div>
-                                                <span className={`px-2 py-1 text-xs rounded-full ${member.role === 'admin'
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-2 py-1 text-xs rounded-full ${member.role === 'admin'
                                                         ? 'bg-purple-500/20 text-purple-300'
                                                         : 'bg-white/10 text-gray-400'
-                                                    }`}>
-                                                    {member.role}
-                                                </span>
+                                                        }`}>
+                                                        {member.role}
+                                                    </span>
+                                                    {isAdmin && member.role !== 'admin' && ( // Only admins can remove non-admin members (simplification) or just not themselves
+                                                        <button
+                                                            onClick={() => handleRemoveMember(member.id, member.fullName)}
+                                                            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                            title="Remove member"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
