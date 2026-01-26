@@ -195,22 +195,32 @@ router.post('/:id/start', authMiddleware, async (req, res) => {
         }
 
         // Create AI bot participant (optional - visible in participant list)
-        const botEmail = process.env.AI_BOT_EMAIL || 'ai-bot@meetai.internal';
-        const { data: { users } } = await supabase.auth.admin.listUsers();
-        const botUser = users.find(u => u.email === botEmail);
+        try {
+            const botEmail = process.env.AI_BOT_EMAIL || 'ai-bot@meetai.internal';
+            const { data: userResult, error: userError } = await supabase.auth.admin.listUsers();
 
-        if (botUser) {
-            // Add bot as live participant
-            await supabase
-                .from('live_participants')
-                .insert({
-                    live_meeting_id: id,
-                    user_id: botUser.id,
-                    is_bot: true,
-                    is_connected: true
-                })
-                .onConflict('live_meeting_id,user_id')
-                .ignore();
+            if (!userError && userResult && userResult.users) {
+                const botUser = userResult.users.find(u => u.email === botEmail);
+
+                if (botUser) {
+                    // Add bot as live participant
+                    await supabase
+                        .from('live_participants')
+                        .insert({
+                            live_meeting_id: id,
+                            user_id: botUser.id,
+                            is_bot: true,
+                            is_connected: true
+                        })
+                        .onConflict('live_meeting_id,user_id')
+                        .ignore();
+                }
+            } else {
+                console.warn('Could not list users for bot inclusion:', userError);
+            }
+        } catch (botError) {
+            console.error('Error adding AI bot to meeting:', botError);
+            // Non-critical error, continue
         }
 
         res.json({ message: 'Meeting started', status: 'live' });
@@ -347,13 +357,14 @@ router.post('/:id/join', authMiddleware, async (req, res) => {
         // Record participant join
         const { error } = await supabase
             .from('live_participants')
-            .insert({
+            .upsert({
                 live_meeting_id: id,
                 user_id: userId,
-                is_connected: true
-            })
-            .onConflict('live_meeting_id,user_id')
-            .merge(['is_connected', 'joined_at']);
+                is_connected: true,
+                joined_at: new Date().toISOString()
+            }, {
+                onConflict: 'live_meeting_id,user_id'
+            });
 
         if (error) {
             console.error('Join error:', error);

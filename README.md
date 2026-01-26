@@ -292,13 +292,79 @@ Option 2: Deploy to another service (Heroku, Railway, Render)
 - `POST /api/meetings/:id/chat` - Send chat message
 - `GET /api/meetings/:id/chat/history` - Get chat history
 
-## Usage
+## Usage & User Flow
 
-1. **Sign Up**: Create an account
-2. **Create Meeting**: Add title, description, select participants, upload audio files
-3. **Processing**: Audio is automatically transcribed and analyzed
-4. **View Results**: See transcript, notes, and extracted tasks
-5. **Chat**: Ask questions about the meeting
+### 1. Sign Up & Organization Setup
+```
+Sign Up → Organization Setup Modal → Create or Join Organization → Dashboard
+```
+
+**First-time users** will see a popup to either:
+- **Create Organization**: Enter a name. Your email domain becomes the org domain.
+- **Join Organization**: Enter an invite code from your admin.
+
+> **Note**: Only users with matching email domains can join an organization (e.g., `@company.com`).
+
+### 2. Invite Team Members
+1. Click **"Manage Org"** in the dashboard header
+2. Two options:
+   - **Send Email Invite**: Enter email → Click "Send Invite" → They receive an email
+   - **Share Invite Code**: Copy the 6-character code and share manually
+
+### 3. Create Meetings
+1. Click **+ Individual** or **+ Group** or **+ Live Meeting**
+2. Add title, description, select participants (only org members shown)
+3. Upload audio files for each participant
+
+### 4. AI Processing
+- Audio is automatically transcribed using Groq Whisper
+- AI generates meeting notes and extracts action items
+- View transcript, notes, and tasks on the meeting detail page
+
+### 5. Meeting Chatbot
+- Ask questions about the meeting content
+- AI responds with context from the transcript
+
+---
+
+## Organization Management
+
+### API Endpoints
+- `POST /api/organizations` - Create organization
+- `POST /api/organizations/join` - Join via invite code
+- `GET /api/organizations/me` - Get current user's org
+- `GET /api/organizations/members` - List org members
+- `POST /api/organizations/invite` - Send email invitation
+- `POST /api/organizations/regenerate-invite` - New invite code (admin)
+
+### Database Tables
+Run `supabase_schema.sql` to create:
+- `organizations` - Org metadata with invite codes
+- `organization_members` - User-org relationships with roles
+
+---
+
+## Email Configuration (for Invitations)
+
+Add to `backend/.env`:
+
+### Option 1: Gmail
+```env
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=your-16-char-app-password
+```
+> Get App Password: Google Account → Security → 2-Step Verification → App passwords
+
+### Option 2: Custom SMTP
+```env
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-username
+SMTP_PASS=your-password
+SMTP_FROM=noreply@yourdomain.com
+```
+
+---
 
 ## License
 

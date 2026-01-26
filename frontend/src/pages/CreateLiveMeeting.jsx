@@ -121,7 +121,7 @@ const CreateLiveMeeting = () => {
             const urlObj = new URL(url);
 
             // Check if it's a valid meeting URL pattern
-            const pathMatch = urlObj.pathname.match(/\/live-meeting\/(\d+)/);
+            const pathMatch = urlObj.pathname.match(/\/live-meeting\/([a-zA-Z0-9-]+)/);
 
             if (!pathMatch) {
                 setUrlError('Invalid meeting URL format. Expected format: .../live-meeting/{id}');
@@ -263,7 +263,7 @@ const CreateLiveMeeting = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10 p-4 md:p-6">
+        <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-white/10 p-4 flex flex-col items-center justify-center">
             {/* Progress Popup Overlay */}
             {loading && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
@@ -301,14 +301,14 @@ const CreateLiveMeeting = () => {
                 </div>
             )}
 
-            <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-12">
+            <div className="w-full max-w-5xl">
                 {/* Header Navigation */}
-                <div className="mb-6 md:mb-10 flex items-center justify-between gap-4">
+                <div className="mb-4 flex items-center justify-between gap-4">
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="group flex items-center gap-2 text-xs md:text-sm font-medium text-gray-500 hover:text-white transition-all duration-300 flex-shrink-0"
+                        className="group flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-white transition-all duration-300 flex-shrink-0"
                     >
-                        <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3 h-3 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                         Back to Dashboard
@@ -318,24 +318,38 @@ const CreateLiveMeeting = () => {
 
                 <div className="relative">
                     {/* Background Glow Effect */}
-                    <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] pointer-events-none opacity-50"></div>
 
-                    <div className="relative bg-[#0A0A0A] border border-white/5 rounded-2xl shadow-2xl overflow-hidden">
-                        <div className="p-6 md:p-8 lg:p-12">
+                    <div className="relative bg-[#0A0A0A] border border-white/5 rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[550px]">
+
+                        {/* Sidebar / Left Panel */}
+                        <div className="w-full md:w-1/3 p-6 bg-white/[0.02] border-b md:border-b-0 md:border-r border-white/5 flex flex-col">
+                            <header className="mb-6">
+                                <h1 className="text-2xl font-light tracking-tight text-white mb-2">
+                                    {mode === 'create' ? 'Create Meeting' : 'Join Meeting'}
+                                </h1>
+                                <p className="text-gray-500 text-xs leading-relaxed">
+                                    {mode === 'create'
+                                        ? 'Start a real-time session with audio, video, and screen sharing.'
+                                        : 'Enter the secure meeting ID or URL to join an active session.'}
+                                </p>
+                            </header>
+
                             {/* Mode Toggle Tabs */}
-                            <div className="mb-8 md:mb-10 flex gap-2 p-1.5 bg-white/[0.02] border border-white/5 rounded-xl">
+                            <div className="flex flex-col gap-2 mt-auto">
                                 <button
                                     type="button"
                                     onClick={() => {
                                         setMode('create');
                                         setUrlError('');
                                     }}
-                                    className={`flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-medium text-xs md:text-sm transition-all duration-300 ${mode === 'create'
+                                    className={`py-3 px-4 rounded-xl font-medium text-xs text-left transition-all duration-300 flex items-center justify-between ${mode === 'create'
                                         ? 'bg-white text-black shadow-lg'
-                                        : 'text-gray-500 hover:text-gray-300'
+                                        : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200'
                                         }`}
                                 >
-                                    Create Meeting
+                                    <span>Create New Meeting</span>
+                                    {mode === 'create' && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>}
                                 </button>
                                 <button
                                     type="button"
@@ -343,226 +357,146 @@ const CreateLiveMeeting = () => {
                                         setMode('join');
                                         setError('');
                                     }}
-                                    className={`flex-1 py-2.5 md:py-3 px-4 md:px-6 rounded-lg font-medium text-xs md:text-sm transition-all duration-300 ${mode === 'join'
+                                    className={`py-3 px-4 rounded-xl font-medium text-xs text-left transition-all duration-300 flex items-center justify-between ${mode === 'join'
                                         ? 'bg-white text-black shadow-lg'
-                                        : 'text-gray-500 hover:text-gray-300'
+                                        : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-200'
                                         }`}
                                 >
-                                    Join via URL
+                                    <span>Join via Code/URL</span>
+                                    {mode === 'join' && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>}
                                 </button>
                             </div>
+                        </div>
 
-                            <header className="mb-8 md:mb-10">
-                                <h1 className="text-2xl md:text-4xl font-light tracking-tight text-white mb-3">
-                                    {mode === 'create' ? 'Create Live Meeting' : 'Join Live Meeting'}
-                                </h1>
-                                <p className="text-gray-500 text-sm">
-                                    {mode === 'create'
-                                        ? 'Start a real-time online meeting with video, audio, and screen sharing.'
-                                        : 'Enter the meeting URL shared with you to join the live session.'}
-                                </p>
-                            </header>
-
+                        {/* Main Content Area */}
+                        <div className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar">
                             {error && (
-                                <div className="mb-8 p-4 bg-red-500/5 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 text-sm animate-in fade-in slide-in-from-top-2">
-                                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="mb-6 p-3 bg-red-500/5 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-400 text-xs animate-in fade-in slide-in-from-top-2">
+                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     {error}
                                 </div>
                             )}
 
-                            {/* Join via URL Form */}
                             {mode === 'join' && (
-                                <form onSubmit={handleJoinMeeting} className="space-y-8">
-                                    <section className="space-y-4">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 ml-1">
+                                <form onSubmit={handleJoinMeeting} className="h-full flex flex-col justify-center max-w-sm mx-auto">
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
                                                 Meeting URL
                                             </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    value={meetingUrl}
-                                                    onChange={(e) => {
-                                                        setMeetingUrl(e.target.value);
-                                                        setUrlError('');
-                                                    }}
-                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
-                                                    placeholder="https://yourapp.com/live-meeting/12345"
-                                                    required
-                                                />
-                                            </div>
+                                            <input
+                                                type="text"
+                                                value={meetingUrl}
+                                                onChange={(e) => {
+                                                    setMeetingUrl(e.target.value);
+                                                    setUrlError('');
+                                                }}
+                                                className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-300"
+                                                placeholder="Paste link here..."
+                                                required
+                                            />
                                             {urlError && (
-                                                <p className="text-xs text-red-400 ml-1 mt-2 animate-in fade-in slide-in-from-top-1">
+                                                <p className="text-xs text-red-400 ml-1 animate-in fade-in slide-in-from-top-1">
                                                     {urlError}
                                                 </p>
                                             )}
-                                            <p className="text-xs text-gray-600 ml-1 mt-2">
-                                                Paste the meeting URL that was shared with you
-                                            </p>
                                         </div>
 
-                                        {/* Info Box */}
-                                        <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex gap-3">
-                                            <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            <div className="text-sm text-blue-300/80">
-                                                <p className="font-medium mb-1">How to join:</p>
-                                                <ol className="list-decimal list-inside space-y-1 text-xs text-blue-300/60">
-                                                    <li>Copy the meeting URL from the invitation or email</li>
-                                                    <li>Paste it in the field above</li>
-                                                    <li>Click "Join Meeting" to enter the live session</li>
-                                                </ol>
-                                            </div>
-                                        </div>
-                                    </section>
-
-                                    <footer className="pt-4 md:pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
                                         <button
                                             type="submit"
-                                            className="relative group flex-1 bg-white text-black font-semibold py-3 md:py-4 text-sm md:text-base rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200"
+                                            className="w-full bg-white text-black font-semibold py-3 text-sm rounded-lg hover:bg-gray-200 transition-colors"
                                         >
-                                            <div className="relative z-10 flex items-center justify-center gap-2">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                                </svg>
-                                                <span>Join Meeting</span>
-                                            </div>
+                                            Join Meeting
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate('/dashboard')}
-                                            className="px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </footer>
+                                    </div>
                                 </form>
                             )}
 
-                            {/* Create Meeting Form */}
                             {mode === 'create' && (
-                                <form onSubmit={handleSubmit} className="space-y-10">
-                                    {/* Basic Info Section */}
-                                    <section className="space-y-6">
-                                        <div className="grid gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 ml-1">
-                                                    Meeting Title
+                                <form onSubmit={handleSubmit} className="flex flex-col h-full">
+                                    <div className="flex-1 space-y-5">
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
+                                                    Title
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={title}
                                                     onChange={(e) => setTitle(e.target.value)}
-                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300"
-                                                    placeholder="e.g., Team Daily Standup"
+                                                    className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-300"
+                                                    placeholder="Meeting Title"
                                                     maxLength={200}
                                                     required
                                                 />
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 ml-1">
-                                                    Description
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
+                                                    Agenda (Optional)
                                                 </label>
                                                 <textarea
                                                     value={description}
                                                     onChange={(e) => setDescription(e.target.value)}
-                                                    className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-white/20 transition-all duration-300 h-32 resize-none"
-                                                    placeholder="Add meeting agenda or objectives..."
+                                                    className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-300 h-20 resize-none"
+                                                    placeholder="Brief description..."
                                                     maxLength={1000}
                                                 />
                                             </div>
                                         </div>
-                                    </section>
 
-                                    {/* Participants Section */}
-                                    <section className="space-y-4">
-                                        <div className="flex items-end justify-between mb-2">
-                                            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 ml-1">
-                                                Select Participants
-                                            </label>
-                                            <span className="text-[10px] text-gray-600 font-medium">
-                                                {selectedParticipants.length} / 10 SELECTED
-                                            </span>
-                                        </div>
+                                        <div className="space-y-2 flex-1 flex flex-col min-h-0">
+                                            <div className="flex items-end justify-between">
+                                                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
+                                                    Participants
+                                                </label>
+                                                <span className="text-[10px] text-gray-600 font-medium">
+                                                    {selectedParticipants.length} SELECTED
+                                                </span>
+                                            </div>
 
-                                        {loadingUsers ? (
-                                            <div className="h-48 flex items-center justify-center bg-white/[0.01] border border-dashed border-white/10 rounded-xl">
-                                                <div className="flex flex-col items-center gap-3">
-                                                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                                                    <span className="text-xs text-gray-600">Loading directory...</span>
+                                            {loadingUsers ? (
+                                                <div className="flex-1 flex items-center justify-center bg-white/[0.02] border border-dashed border-white/10 rounded-lg">
+                                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                                                {participants.map(user => {
-                                                    const isSelected = selectedParticipants.includes(user.id);
-                                                    return (
-                                                        <label
-                                                            key={user.id}
-                                                            className={`group relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl border transition-all duration-300 cursor-pointer ${isSelected
-                                                                ? 'bg-white/[0.04] border-white/20 shadow-lg'
-                                                                : 'bg-white/[0.01] border-white/5 hover:border-white/10 hover:bg-white/[0.02]'
-                                                                }`}
-                                                        >
-                                                            <div className={`w-4 h-4 md:w-5 md:h-5 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${isSelected ? 'bg-white border-white' : 'border-white/20 group-hover:border-white/40'
-                                                                }`}>
-                                                                {isSelected && (
-                                                                    <svg className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                                    </svg>
-                                                                )}
+                                            ) : (
+                                                <div className="grid grid-cols-2 gap-2 overflow-y-auto custom-scrollbar pr-1 max-h-[160px]">
+                                                    {participants.map(user => {
+                                                        const isSelected = selectedParticipants.includes(user.id);
+                                                        return (
+                                                            <div
+                                                                key={user.id}
+                                                                onClick={() => handleParticipantToggle(user.id)}
+                                                                className={`cursor-pointer p-2 rounded-lg border transition-all duration-200 flex items-center gap-2 ${isSelected
+                                                                    ? 'bg-white/[0.06] border-white/20'
+                                                                    : 'bg-white/[0.01] border-white/5 hover:bg-white/[0.03]'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-3 h-3 rounded-full border flex flex-col items-center justify-center transition-colors ${isSelected ? 'bg-white border-white' : 'border-white/20'}`}></div>
+                                                                <div className="overflow-hidden">
+                                                                    <p className={`text-xs font-medium truncate ${isSelected ? 'text-white' : 'text-gray-400'}`}>
+                                                                        {user.fullName || user.name || 'User'}
+                                                                    </p>
+                                                                </div>
                                                             </div>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={isSelected}
-                                                                onChange={() => handleParticipantToggle(user.id)}
-                                                                className="hidden"
-                                                            />
-                                                            <div className="flex flex-col min-w-0">
-                                                                <span className={`text-xs md:text-sm font-medium truncate transition-colors ${isSelected ? 'text-white' : 'text-gray-400'}`}>
-                                                                    {user.fullName || user.name || 'User'}
-                                                                </span>
-                                                                <span className="text-[11px] text-gray-600 truncate">
-                                                                    {user.email}
-                                                                </span>
-                                                            </div>
-                                                        </label>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </section>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
 
-                                    {/* Action Buttons */}
-                                    <footer className="pt-4 md:pt-6 flex flex-col sm:flex-row gap-3 md:gap-4">
+                                    <div className="pt-5 mt-auto">
                                         <button
                                             type="submit"
                                             disabled={loading || selectedParticipants.length === 0}
-                                            className="relative group flex-1 bg-white text-black font-semibold py-3 md:py-4 text-sm md:text-base rounded-xl overflow-hidden transition-all duration-300 hover:bg-gray-200 disabled:opacity-20 disabled:cursor-not-allowed"
+                                            className="w-full bg-white text-black font-semibold py-3 text-sm rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
-                                            <div className="relative z-10 flex items-center justify-center gap-2">
-                                                {loading ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
-                                                        <span>Creating...</span>
-                                                    </>
-                                                ) : (
-                                                    <span>Create Live Meeting</span>
-                                                )}
-                                            </div>
+                                            {loading ? <span className="animate-pulse">Creating...</span> : 'Create Meeting'}
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate('/dashboard')}
-                                            className="px-6 md:px-8 py-3 md:py-4 text-sm md:text-base rounded-xl border border-white/10 text-gray-400 font-medium hover:bg-white/5 hover:text-white transition-all duration-300"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </footer>
+                                    </div>
                                 </form>
                             )}
                         </div>
@@ -572,7 +506,7 @@ const CreateLiveMeeting = () => {
 
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
-                    width: 4px;
+                    width: 3px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
                     background: transparent;
