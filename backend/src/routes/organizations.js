@@ -380,4 +380,57 @@ router.post('/invite', authMiddleware, async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/organizations/members/:userId
+ * Remove a member from the organization
+ */
+router.delete('/members/:userId', authMiddleware, async (req, res) => {
+    try {
+        const { userId: targetUserId } = req.params;
+        const requesterId = req.user.id;
+
+        // Check if requester is admin of their organization
+        const { data: requesterMembership } = await supabase
+            .from('organization_members')
+            .select('organization_id, role')
+            .eq('user_id', requesterId)
+            .single();
+
+        if (!requesterMembership) {
+            return res.status(404).json({ error: 'You are not part of any organization' });
+        }
+
+        if (requesterMembership.role !== 'admin') {
+            return res.status(403).json({ error: 'Only admins can remove members' });
+        }
+
+        // Verify target user belongs to the same organization
+        const { data: targetMembership } = await supabase
+            .from('organization_members')
+            .select('organization_id')
+            .eq('user_id', targetUserId)
+            .single();
+
+        if (!targetMembership || targetMembership.organization_id !== requesterMembership.organization_id) {
+            return res.status(404).json({ error: 'Member not found in your organization' });
+        }
+
+        // Remove the member
+        const { error: removeError } = await supabase
+            .from('organization_members')
+            .delete()
+            .eq('user_id', targetUserId)
+            .eq('organization_id', requesterMembership.organization_id);
+
+        if (removeError) {
+            return res.status(500).json({ error: 'Failed to remove member' });
+        }
+
+        res.json({ message: 'Member removed successfully' });
+    } catch (error) {
+        console.error('Remove member error:', error);
+        res.status(500).json({ error: 'Failed to remove member' });
+    }
+});
+
 export default router;
