@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
@@ -8,8 +9,21 @@ import CreateGroupMeeting from './pages/CreateGroupMeeting';
 import CreateLiveMeeting from './pages/CreateLiveMeeting';
 import LiveMeeting from './pages/LiveMeeting';
 import ProtectedRoute from './components/ProtectedRoute';
+import OwlSplash from './components/OwlSplash';
+
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 1600); // 1.6s splash
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showSplash) {
+    return <OwlSplash />;
+  }
+
   return (
     <Router>
       <Routes>
