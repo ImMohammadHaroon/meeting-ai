@@ -21,8 +21,11 @@ const createTransporter = () => {
 
     // Fallback to Gmail if GMAIL credentials are provided
     if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+        console.log('Using Gmail configuration for:', process.env.GMAIL_USER);
         return nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true, // use SSL
             auth: {
                 user: process.env.GMAIL_USER,
                 pass: process.env.GMAIL_APP_PASSWORD
