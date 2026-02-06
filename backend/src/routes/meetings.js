@@ -30,11 +30,25 @@ const upload = multer({
  */
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        const { title, description, participantIds } = req.body;
+        const { title, description, participantIds, organizationId } = req.body;
         const userId = req.user.id;
 
         if (!title) {
             return res.status(400).json({ error: 'Title is required' });
+        }
+
+        // If organizationId provided, verify user is member
+        if (organizationId) {
+            const { data: membership } = await supabase
+                .from('organization_members')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('organization_id', organizationId)
+                .single();
+
+            if (!membership) {
+                return res.status(403).json({ error: 'You are not a member of this organization' });
+            }
         }
 
         // Create meeting in database
@@ -44,6 +58,7 @@ router.post('/', authMiddleware, async (req, res) => {
                 title,
                 description: description || '',
                 created_by: userId,
+                organization_id: organizationId || null,
                 processed: false,
                 type: req.body.type || 'standard'
             })
@@ -79,50 +94,66 @@ router.post('/', authMiddleware, async (req, res) => {
 
 /**
  * GET /api/meetings
- * Get all meetings for current user
+ * Get all meetings for current user (optionally filtered by organization)
  */
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
+        const { organizationId } = req.query;
 
-        // Get meetings where user is the creator
-        const { data: createdMeetings, error: createdError } = await supabase
+        // Build base query for meetings where user is the creator
+        let createdQuery = supabase
             .from('meetings')
             .select(`
-        *,
-        meeting_participants (
-          user_id
-        )
-      `)
+                *,
+                meeting_participants (
+                    user_id
+                )
+            `)
             .eq('created_by', userId)
             .order('created_at', { ascending: false });
+
+        // Filter by organization if provided
+        if (organizationId) {
+            createdQuery = createdQuery.eq('organization_id', organizationId);
+        }
+
+        const { data: createdMeetings, error: createdError } = await createdQuery;
 
         if (createdError) {
             return res.status(500).json({ error: createdError.message });
         }
 
         // Get meetings where user is a participant
-        const { data: participantMeetings, error: participantError } = await supabase
+        let participantQuery = supabase
             .from('meeting_participants')
             .select(`
-        meeting_id,
-        meetings (
-          *,
-          meeting_participants (
-            user_id
-          )
-        )
-      `)
+                meeting_id,
+                meetings (
+                    *,
+                    meeting_participants (
+                        user_id
+                    )
+                )
+            `)
             .eq('user_id', userId);
+
+        const { data: participantMeetings, error: participantError } = await participantQuery;
 
         if (participantError) {
             return res.status(500).json({ error: participantError.message });
         }
 
-        // Extract meetings from participant results
-        const participantMeetingsData = participantMeetings
+        // Extract meetings from participant results and filter by org if needed
+        let participantMeetingsData = participantMeetings
             .filter(p => p.meetings)
             .map(p => p.meetings);
+
+        if (organizationId) {
+            participantMeetingsData = participantMeetingsData.filter(
+                m => m.organization_id === organizationId
+            );
+        }
 
         // Merge and deduplicate meetings
         const allMeetings = [...(createdMeetings || [])];

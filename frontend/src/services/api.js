@@ -128,8 +128,9 @@ export const meetingsAPI = {
         return response.data;
     },
 
-    getAll: async () => {
-        const response = await api.get('/meetings');
+    getAll: async (organizationId = null) => {
+        const params = organizationId ? { organizationId } : {};
+        const response = await api.get('/meetings', { params });
         return response.data;
     },
 
@@ -184,23 +185,42 @@ export const organizationsAPI = {
         return response.data;
     },
 
-    getMembers: async () => {
-        const response = await api.get('/organizations/members');
+    getAllMyOrgs: async () => {
+        const response = await api.get('/organizations/all');
         return response.data;
     },
 
-    regenerateInvite: async () => {
-        const response = await api.post('/organizations/regenerate-invite');
+    switchOrganization: async (organizationId) => {
+        const response = await api.post('/organizations/switch', { organizationId });
         return response.data;
     },
 
-    sendInvite: async (email) => {
-        const response = await api.post('/organizations/invite', { email });
+    leaveOrganization: async (organizationId) => {
+        const response = await api.post('/organizations/leave', { organizationId });
         return response.data;
     },
 
-    removeMember: async (userId) => {
-        const response = await api.delete(`/organizations/members/${userId}`);
+    getMembers: async (organizationId) => {
+        const response = await api.get('/organizations/members', {
+            params: { organizationId }
+        });
+        return response.data;
+    },
+
+    regenerateInvite: async (organizationId) => {
+        const response = await api.post('/organizations/regenerate-invite', { organizationId });
+        return response.data;
+    },
+
+    sendInvite: async (email, organizationId) => {
+        const response = await api.post('/organizations/invite', { email, organizationId });
+        return response.data;
+    },
+
+    removeMember: async (userId, organizationId) => {
+        const response = await api.delete(`/organizations/members/${userId}`, {
+            params: { organizationId }
+        });
         return response.data;
     }
 };

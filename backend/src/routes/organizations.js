@@ -18,6 +18,41 @@ const generateInviteCode = () => {
 };
 
 /**
+ * Generate a URL-friendly slug from organization name
+ */
+const generateSlug = async (name) => {
+    // Convert to lowercase, replace spaces with hyphens, remove special chars
+    let baseSlug = name.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+    // Ensure minimum length
+    if (baseSlug.length < 3) {
+        baseSlug = baseSlug + '-org';
+    }
+
+    let slug = baseSlug;
+    let counter = 0;
+
+    // Check for uniqueness
+    while (true) {
+        const { data: existing } = await supabase
+            .from('organizations')
+            .select('id')
+            .eq('slug', slug)
+            .single();
+
+        if (!existing) break;
+        counter++;
+        slug = `${baseSlug}-${counter}`;
+    }
+
+    return slug;
+};
+
+/**
  * Extract domain from email
  */
 const extractDomain = (email) => {
@@ -38,26 +73,20 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Organization name is required' });
         }
 
-        // Check if user already belongs to an organization
-        const { data: existingMembership } = await supabase
-            .from('organization_members')
-            .select('id')
-            .eq('user_id', userId)
-            .single();
-
-        if (existingMembership) {
-            return res.status(400).json({ error: 'You already belong to an organization' });
-        }
+        // Multi-org: Users can now create/join multiple organizations
+        // Generate unique slug for the organization
+        const slug = await generateSlug(name);
 
         // Extract domain from user's email
         const domain = extractDomain(userEmail);
         const inviteCode = generateInviteCode();
 
-        // Create the organization
+        // Create the organization with slug
         const { data: org, error: orgError } = await supabase
             .from('organizations')
             .insert({
                 name,
+                slug,
                 domain,
                 invite_code: inviteCode,
                 created_by: userId
@@ -110,17 +139,6 @@ router.post('/join', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Invite code is required' });
         }
 
-        // Check if user already belongs to an organization
-        const { data: existingMembership } = await supabase
-            .from('organization_members')
-            .select('id')
-            .eq('user_id', userId)
-            .single();
-
-        if (existingMembership) {
-            return res.status(400).json({ error: 'You already belong to an organization' });
-        }
-
         // Find organization by invite code
         const { data: org, error: orgError } = await supabase
             .from('organizations')
@@ -130,6 +148,18 @@ router.post('/join', authMiddleware, async (req, res) => {
 
         if (orgError || !org) {
             return res.status(404).json({ error: 'Invalid invite code' });
+        }
+
+        // Multi-org: Check if already member of THIS specific org
+        const { data: existingMembership } = await supabase
+            .from('organization_members')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('organization_id', org.id)
+            .single();
+
+        if (existingMembership) {
+            return res.status(400).json({ error: 'You are already a member of this organization' });
         }
 
         // Check if user's email domain matches organization domain
@@ -208,19 +238,29 @@ router.get('/me', authMiddleware, async (req, res) => {
  * GET /api/organizations/members
  * Get all members of user's organization
  */
+/**
+ * GET /api/organizations/members
+ * Get members of an organization
+ */
 router.get('/members', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
+        const { organizationId } = req.query;
 
-        // First get user's organization
+        if (!organizationId) {
+            return res.status(400).json({ error: 'Organization ID is required' });
+        }
+
+        // Check if user is member of this specific organization
         const { data: membership } = await supabase
             .from('organization_members')
             .select('organization_id')
             .eq('user_id', userId)
+            .eq('organization_id', organizationId)
             .single();
 
         if (!membership) {
-            return res.status(404).json({ error: 'You are not part of any organization' });
+            return res.status(404).json({ error: 'You are not a member of this organization' });
         }
 
         // Get all members of this organization
@@ -260,17 +300,23 @@ router.get('/members', authMiddleware, async (req, res) => {
  */
 router.post('/regenerate-invite', authMiddleware, async (req, res) => {
     try {
+        const { organizationId } = req.body;
         const userId = req.user.id;
 
-        // Check if user is admin of their organization
+        if (!organizationId) {
+            return res.status(400).json({ error: 'Organization ID is required' });
+        }
+
+        // Check if user is admin of this specific organization
         const { data: membership } = await supabase
             .from('organization_members')
             .select('organization_id, role')
             .eq('user_id', userId)
+            .eq('organization_id', organizationId)
             .single();
 
         if (!membership) {
-            return res.status(404).json({ error: 'You are not part of any organization' });
+            return res.status(404).json({ error: 'You are not a member of this organization' });
         }
 
         if (membership.role !== 'admin') {
@@ -283,7 +329,7 @@ router.post('/regenerate-invite', authMiddleware, async (req, res) => {
         const { data: org, error } = await supabase
             .from('organizations')
             .update({ invite_code: newInviteCode })
-            .eq('id', membership.organization_id)
+            .eq('id', organizationId)
             .select()
             .single();
 
@@ -307,7 +353,7 @@ router.post('/regenerate-invite', authMiddleware, async (req, res) => {
  */
 router.post('/invite', authMiddleware, async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, organizationId } = req.body;
         const userId = req.user.id;
         const inviterEmail = req.user.email;
 
@@ -315,7 +361,11 @@ router.post('/invite', authMiddleware, async (req, res) => {
             return res.status(400).json({ error: 'Email is required' });
         }
 
-        // Get user's membership and organization
+        if (!organizationId) {
+            return res.status(400).json({ error: 'Organization ID is required' });
+        }
+
+        // Get user's membership for this specific organization
         const { data: membership } = await supabase
             .from('organization_members')
             .select(`
@@ -329,10 +379,11 @@ router.post('/invite', authMiddleware, async (req, res) => {
                 )
             `)
             .eq('user_id', userId)
+            .eq('organization_id', organizationId)
             .single();
 
         if (!membership) {
-            return res.status(404).json({ error: 'You are not part of any organization' });
+            return res.status(404).json({ error: 'You are not a member of this organization' });
         }
 
         const org = membership.organizations;
@@ -387,17 +438,23 @@ router.post('/invite', authMiddleware, async (req, res) => {
 router.delete('/members/:userId', authMiddleware, async (req, res) => {
     try {
         const { userId: targetUserId } = req.params;
+        const { organizationId } = req.query; // Pass org ID as query param
         const requesterId = req.user.id;
 
-        // Check if requester is admin of their organization
+        if (!organizationId) {
+            return res.status(400).json({ error: 'Organization ID is required' });
+        }
+
+        // Check if requester is admin of this specific organization
         const { data: requesterMembership } = await supabase
             .from('organization_members')
             .select('organization_id, role')
             .eq('user_id', requesterId)
+            .eq('organization_id', organizationId)
             .single();
 
         if (!requesterMembership) {
-            return res.status(404).json({ error: 'You are not part of any organization' });
+            return res.status(404).json({ error: 'You are not a member of this organization' });
         }
 
         if (requesterMembership.role !== 'admin') {
@@ -430,6 +487,196 @@ router.delete('/members/:userId', authMiddleware, async (req, res) => {
     } catch (error) {
         console.error('Remove member error:', error);
         res.status(500).json({ error: 'Failed to remove member' });
+    }
+});
+
+/**
+ * GET /api/organizations/all
+ * Get ALL organizations user belongs to (multi-org support)
+ */
+router.get('/all', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Get all organizations the user is a member of
+        const { data: memberships, error: memberError } = await supabase
+            .from('organization_members')
+            .select(`
+                role,
+                joined_at,
+                organizations (
+                    id,
+                    name,
+                    slug,
+                    domain,
+                    invite_code,
+                    created_at
+                )
+            `)
+            .eq('user_id', userId);
+
+        if (memberError) {
+            console.error('Get all orgs error:', memberError);
+            return res.status(500).json({ error: 'Failed to fetch organizations' });
+        }
+
+        // Transform the data
+        const organizations = (memberships || []).map(m => ({
+            ...m.organizations,
+            role: m.role,
+            joinedAt: m.joined_at
+        }));
+
+        res.json({ organizations });
+    } catch (error) {
+        console.error('Get all organizations error:', error);
+        res.status(500).json({ error: 'Failed to fetch organizations' });
+    }
+});
+
+/**
+ * POST /api/organizations/switch
+ * Switch user's active organization
+ */
+router.post('/switch', authMiddleware, async (req, res) => {
+    try {
+        const { organizationId } = req.body;
+        const userId = req.user.id;
+
+        if (!organizationId) {
+            return res.status(400).json({ error: 'Organization ID is required' });
+        }
+
+        // Verify user is member of this organization
+        const { data: membership } = await supabase
+            .from('organization_members')
+            .select(`
+                role,
+                organizations (
+                    id,
+                    name,
+                    slug,
+                    domain,
+                    invite_code,
+                    created_at
+                )
+            `)
+            .eq('user_id', userId)
+            .eq('organization_id', organizationId)
+            .single();
+
+        if (!membership) {
+            return res.status(404).json({ error: 'You are not a member of this organization' });
+        }
+
+        // Update user metadata with active organization
+        // This is stored in Supabase Auth user_metadata
+        const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+            user_metadata: {
+                active_organization_id: organizationId
+            }
+        });
+
+        if (updateError) {
+            console.error('Update active org error:', updateError);
+            return res.status(500).json({ error: 'Failed to switch organization' });
+        }
+
+        res.json({
+            message: 'Organization switched successfully',
+            organization: membership.organizations,
+            role: membership.role
+        });
+    } catch (error) {
+        console.error('Switch organization error:', error);
+        res.status(500).json({ error: 'Failed to switch organization' });
+    }
+});
+
+/**
+ * POST /api/organizations/leave
+ * Leave an organization (user removes themselves)
+ */
+router.post('/leave', authMiddleware, async (req, res) => {
+    try {
+        const { organizationId } = req.body;
+        const userId = req.user.id;
+
+        if (!organizationId) {
+            return res.status(400).json({ error: 'Organization ID is required' });
+        }
+
+        // Get user's membership in this org
+        const { data: membership } = await supabase
+            .from('organization_members')
+            .select('role')
+            .eq('user_id', userId)
+            .eq('organization_id', organizationId)
+            .single();
+
+        if (!membership) {
+            return res.status(404).json({ error: 'You are not a member of this organization' });
+        }
+
+        // If user is admin, check if there are other admins
+        if (membership.role === 'admin') {
+            const { data: otherAdmins } = await supabase
+                .from('organization_members')
+                .select('id')
+                .eq('organization_id', organizationId)
+                .eq('role', 'admin')
+                .neq('user_id', userId);
+
+            if (!otherAdmins || otherAdmins.length === 0) {
+                // Check if there are other members at all
+                const { data: otherMembers } = await supabase
+                    .from('organization_members')
+                    .select('id')
+                    .eq('organization_id', organizationId)
+                    .neq('user_id', userId);
+
+                if (otherMembers && otherMembers.length > 0) {
+                    return res.status(400).json({
+                        error: 'You are the only admin. Please promote another member to admin before leaving.'
+                    });
+                }
+                // If no other members, org will be empty after leaving (could auto-delete)
+            }
+        }
+
+        // Remove user from organization
+        const { error: removeError } = await supabase
+            .from('organization_members')
+            .delete()
+            .eq('user_id', userId)
+            .eq('organization_id', organizationId);
+
+        if (removeError) {
+            console.error('Leave org error:', removeError);
+            return res.status(500).json({ error: 'Failed to leave organization' });
+        }
+
+        // If this was user's active org, clear it from metadata
+        const { data: { user } } = await supabase.auth.admin.getUserById(userId);
+        if (user?.user_metadata?.active_organization_id === organizationId) {
+            // Get user's remaining organizations
+            const { data: remainingOrgs } = await supabase
+                .from('organization_members')
+                .select('organization_id')
+                .eq('user_id', userId)
+                .limit(1);
+
+            await supabase.auth.admin.updateUserById(userId, {
+                user_metadata: {
+                    active_organization_id: remainingOrgs?.[0]?.organization_id || null
+                }
+            });
+        }
+
+        res.json({ message: 'Successfully left organization' });
+    } catch (error) {
+        console.error('Leave organization error:', error);
+        res.status(500).json({ error: 'Failed to leave organization' });
     }
 });
 

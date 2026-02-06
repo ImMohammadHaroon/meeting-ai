@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { organizationsAPI } from '../services/api';
 
-const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
+const OrganizationPanel = ({ organization, userRole, onUpdate, onLeave }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -15,6 +15,8 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
     const [inviteError, setInviteError] = useState('');
 
     const isAdmin = userRole === 'admin';
+    const [leaving, setLeaving] = useState(false);
+    const [leaveError, setLeaveError] = useState('');
 
     useEffect(() => {
         if (isOpen) {
@@ -25,7 +27,7 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
     const fetchMembers = async () => {
         setLoading(true);
         try {
-            const { members } = await organizationsAPI.getMembers();
+            const { members } = await organizationsAPI.getMembers(organization.id);
             setMembers(members || []);
         } catch (error) {
             console.error('Failed to fetch members:', error);
@@ -49,7 +51,7 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
 
         setRegenerating(true);
         try {
-            const { inviteCode } = await organizationsAPI.regenerateInvite();
+            const { inviteCode } = await organizationsAPI.regenerateInvite(organization.id);
             onUpdate({ ...organization, invite_code: inviteCode });
         } catch (error) {
             console.error('Failed to regenerate code:', error);
@@ -65,7 +67,7 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
         setSendingInvite(true);
 
         try {
-            await organizationsAPI.sendInvite(inviteEmail);
+            await organizationsAPI.sendInvite(inviteEmail, organization.id);
             setInviteSuccess(`Invitation sent to ${inviteEmail}`);
             setInviteEmail('');
             setTimeout(() => setInviteSuccess(''), 5000);
@@ -80,7 +82,7 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
         if (!confirm(`Are you sure you want to remove ${userName} from the organization?`)) return;
 
         try {
-            await organizationsAPI.removeMember(userId);
+            await organizationsAPI.removeMember(userId, organization.id);
             // Update list locally
             setMembers(prev => prev.filter(m => m.id !== userId));
         } catch (error) {
@@ -250,7 +252,37 @@ const OrganizationPanel = ({ organization, userRole, onUpdate }) => {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-6 border-t border-white/10">
+                        <div className="p-6 border-t border-white/10 space-y-3">
+                            {/* Leave Organization Button */}
+                            {!isAdmin && (
+                                <button
+                                    onClick={async () => {
+                                        if (!confirm(`Are you sure you want to leave ${organization.name}? You'll need a new invite to rejoin.`)) return;
+                                        setLeaving(true);
+                                        setLeaveError('');
+                                        try {
+                                            await onLeave?.(organization.id);
+                                            setIsOpen(false);
+                                        } catch (err) {
+                                            setLeaveError(err.message || 'Failed to leave organization');
+                                        } finally {
+                                            setLeaving(false);
+                                        }
+                                    }}
+                                    disabled={leaving}
+                                    className="w-full px-4 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 transition-all disabled:opacity-50"
+                                >
+                                    {leaving ? 'Leaving...' : 'Leave Organization'}
+                                </button>
+                            )}
+                            {isAdmin && (
+                                <p className="text-xs text-gray-500 text-center">
+                                    Admins must transfer admin role before leaving
+                                </p>
+                            )}
+                            {leaveError && (
+                                <p className="text-sm text-red-400 text-center">{leaveError}</p>
+                            )}
                             <button
                                 onClick={() => setIsOpen(false)}
                                 className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white rounded-xl hover:bg-white/10 transition-all"
