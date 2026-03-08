@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 import { organizationsAPI } from '../services/api';
 
-const OrganizationSetupModal = ({ isOpen, onComplete, userEmail }) => {
+const OrganizationSetupModal = ({ isOpen, onComplete, onClose, userEmail }) => {
     const [mode, setMode] = useState('choose'); // 'choose', 'create', 'join'
     const [orgName, setOrgName] = useState('');
     const [inviteCode, setInviteCode] = useState('');
@@ -41,13 +42,29 @@ const OrganizationSetupModal = ({ isOpen, onComplete, userEmail }) => {
         }
     };
 
+    const handleClose = () => {
+        setMode('choose');
+        setOrgName('');
+        setInviteCode('');
+        setError('');
+        if (onClose) onClose();
+    };
+
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <div className="w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
                 {/* Header */}
-                <div className="p-6 border-b border-white/10">
+                <div className="p-6 border-b border-white/10 relative">
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        className="absolute top-4 right-4 p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                        aria-label="Close organization setup"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                     <h2 className="text-xl font-semibold text-white text-center">
                         {mode === 'choose' && 'Welcome! Set Up Your Organization'}
                         {mode === 'create' && 'Create Organization'}

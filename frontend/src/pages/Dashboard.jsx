@@ -6,6 +6,7 @@ import OrganizationSetupModal from '../components/OrganizationSetupModal';
 import OrganizationPanel from '../components/OrganizationPanel';
 import OrganizationSwitcher from '../components/OrganizationSwitcher';
 import { useOrganization } from '../contexts/OrganizationContext';
+import { GlowingEffect } from '../components/ui/glowing-effect';
 import meetingBg from '../assets/meeting.png';
 
 const Dashboard = () => {
@@ -117,6 +118,7 @@ const Dashboard = () => {
             <OrganizationSetupModal
                 isOpen={showOrgModal}
                 onComplete={handleOrgSetupComplete}
+                onClose={() => setShowOrgModal(false)}
                 userEmail={userEmail}
             />
 
@@ -163,7 +165,8 @@ const Dashboard = () => {
 
                 {/* Error Message */}
                 {error && (
-                    <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200">
+                    <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 relative overflow-hidden">
+                        <GlowingEffect spread={90} glow={true} disabled={false} proximity={140} inactiveZone={0} borderWidth={3} />
                         {error}
                     </div>
                 )}
@@ -176,7 +179,8 @@ const Dashboard = () => {
                     </div>
                 ) : meetings.length === 0 ? (
                     /* Empty State */
-                    <div className="bg-black/90 rounded-xl p-12 text-center">
+                    <div className="bg-black/90 rounded-xl p-12 text-center relative overflow-hidden">
+                        <GlowingEffect spread={90} glow={true} disabled={false} proximity={140} inactiveZone={0} borderWidth={3} />
                         <h2 className="text-2xl font-semibold mb-4">No meetings yet</h2>
                         <p className="text-white/60 mb-6">
                             Create your first meeting to get started with AI-powered transcription and analysis.
@@ -192,8 +196,9 @@ const Dashboard = () => {
                             <Link
                                 key={meeting.id}
                                 to={`/meetings/${meeting.id}`}
-                                className="card-glass group relative"
+                                className="card-glass group relative overflow-hidden"
                             >
+                                <GlowingEffect spread={90} glow={true} disabled={false} proximity={140} inactiveZone={0} borderWidth={3} />
                                 {/* Delete Button */}
                                 <button
                                     onClick={(e) => handleDeleteMeeting(meeting.id, meeting.title, e)}

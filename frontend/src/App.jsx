@@ -8,6 +8,7 @@ import MeetingDetail from './pages/MeetingDetail';
 import CreateGroupMeeting from './pages/CreateGroupMeeting';
 import CreateLiveMeeting from './pages/CreateLiveMeeting';
 import LiveMeeting from './pages/LiveMeeting';
+import LandingPage from './pages/LandingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import OwlSplash from './components/OwlSplash';
 import { OrganizationProvider } from './contexts/OrganizationContext';
@@ -29,6 +30,9 @@ function App() {
     <OrganizationProvider>
       <Router>
         <Routes>
+          {/* Landing Route */}
+          <Route path="/" element={<LandingPage />} />
+
           {/* Public Routes */}
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
@@ -83,11 +87,8 @@ function App() {
             }
           />
 
-          {/* Redirect root to dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
           {/* 404 Redirect */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </OrganizationProvider>
