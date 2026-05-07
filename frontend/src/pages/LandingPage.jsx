@@ -54,7 +54,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Rocket size={18} />
-            <h1 className="text-xl font-semibold">Meeting Owl</h1>
+            <h1 className="text-xl font-semibold">Meeting AI</h1>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm text-white/70">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
@@ -100,7 +100,7 @@ const LandingPage = () => {
         <section id="workflow" className="max-w-6xl mx-auto px-4 py-16 md:py-20">
           <div className="glass-container p-6 md:p-10 relative overflow-hidden">
             <GlowingEffect spread={90} glow={true} disabled={false} proximity={140} inactiveZone={0} borderWidth={3} />
-            <h2 className="text-2xl md:text-3xl font-bold mb-8">How Meeting Owl works</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-8">How Meeting AI works</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <div>
                 <div className="flex items-center gap-2 mb-3 text-white/90"><CheckCircle2 size={18} /> Step 1</div>
@@ -174,7 +174,7 @@ const LandingPage = () => {
 
       <footer className="border-t border-white/10 py-8 px-4">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-white/60 text-sm">
-          <p>© {new Date().getFullYear()} Meeting Owl. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Meeting AI. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/signin" className="hover:text-white transition-colors">Sign In</Link>
             <Link to="/signup" className="hover:text-white transition-colors">Create Account</Link>
