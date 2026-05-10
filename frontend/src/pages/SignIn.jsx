@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { organizationsAPI } from '../services/api';
-import signInSignUpBg from '../assets/signin-signup.png';
+import signInSignUpBg from '../assets/signin-signup.webp';
 
 const SignIn = () => {
     const [email, setEmail] = useState('');

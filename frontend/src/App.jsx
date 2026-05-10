@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import Dashboard from './pages/Dashboard';
@@ -9,6 +9,7 @@ import CreateGroupMeeting from './pages/CreateGroupMeeting';
 import CreateLiveMeeting from './pages/CreateLiveMeeting';
 import LiveMeeting from './pages/LiveMeeting';
 import LandingPage from './pages/LandingPage';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import OwlSplash from './components/OwlSplash';
 import { OrganizationProvider } from './contexts/OrganizationContext';
@@ -87,8 +88,7 @@ function App() {
             }
           />
 
-          {/* 404 Redirect */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </OrganizationProvider>

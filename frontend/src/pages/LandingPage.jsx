@@ -11,6 +11,7 @@ import {
   Users,
   Video
 } from 'lucide-react';
+import { FAQ1 } from '@/components/ui/faq-monocrhome';
 import { GlowingEffect } from '../components/ui/glowing-effect';
 import DotGlobeHeroDemo, { ScrollImageSection } from '../components/ui/demo';
 
@@ -150,25 +151,8 @@ const LandingPage = () => {
           </div>
         </section>
 
-        <section id="faq" className="max-w-6xl mx-auto px-4 pt-16 md:pt-20 pb-8 md:pb-12">
-          <div className="glass-container p-6 md:p-10 relative overflow-hidden">
-            <GlowingEffect spread={90} glow={true} disabled={false} proximity={140} inactiveZone={0} borderWidth={3} />
-            <h2 className="text-2xl md:text-3xl font-bold mb-6">FAQ</h2>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold">Can I create both private and team meetings?</h3>
-                <p className="text-white/70 text-sm mt-1">Yes. You can create individual meetings and group meetings from the dashboard.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold">How do participants join live meetings?</h3>
-                <p className="text-white/70 text-sm mt-1">Each live meeting generates a shareable URL so participants can join quickly.</p>
-              </div>
-              <div>
-                <h3 className="font-semibold">What does the AI assistant do?</h3>
-                <p className="text-white/70 text-sm mt-1">It answers meeting-context questions, summarizes content, and helps extract next steps.</p>
-              </div>
-            </div>
-          </div>
+        <section id="faq" className="relative scroll-mt-24">
+          <FAQ1 />
         </section>
       </main>
 

@@ -7,7 +7,7 @@ import OrganizationPanel from '../components/OrganizationPanel';
 import OrganizationSwitcher from '../components/OrganizationSwitcher';
 import { useOrganization } from '../contexts/OrganizationContext';
 import { GlowingEffect } from '../components/ui/glowing-effect';
-import meetingBg from '../assets/meeting.png';
+import meetingBg from '../assets/meeting.webp';
 
 const Dashboard = () => {
     const [meetings, setMeetings] = useState([]);
