@@ -72,7 +72,10 @@ const OrganizationPanel = ({ organization, userRole, onUpdate, onLeave }) => {
             setInviteEmail('');
             setTimeout(() => setInviteSuccess(''), 5000);
         } catch (error) {
-            setInviteError(error.response?.data?.error || 'Failed to send invitation');
+            const data = error.response?.data;
+            const message = data?.error || error.message || 'Failed to send invitation';
+            const details = data?.details ? ` (${data.details})` : '';
+            setInviteError(`${message}${details}`);
         } finally {
             setSendingInvite(false);
         }

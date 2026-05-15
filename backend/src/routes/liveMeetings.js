@@ -30,11 +30,24 @@ const upload = multer({
  */
 router.post('/create', authMiddleware, async (req, res) => {
     try {
-        const { title, description, participantIds } = req.body;
+        const { title, description, participantIds, organizationId } = req.body;
         const userId = req.user.id;
 
         if (!title) {
             return res.status(400).json({ error: 'Title is required' });
+        }
+
+        if (organizationId) {
+            const { data: membership } = await supabase
+                .from('organization_members')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('organization_id', organizationId)
+                .single();
+
+            if (!membership) {
+                return res.status(403).json({ error: 'You are not a member of this organization' });
+            }
         }
 
         // Create base meeting record
@@ -44,7 +57,9 @@ router.post('/create', authMiddleware, async (req, res) => {
                 title,
                 description: description || '',
                 created_by: userId,
-                processed: false
+                organization_id: organizationId || null,
+                processed: false,
+                type: 'live'
             })
             .select()
             .single();

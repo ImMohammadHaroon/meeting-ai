@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { liveMeetingsAPI, usersAPI } from '../services/api';
 import { supabase } from '../services/supabase';
+import { useOrganization } from '../contexts/OrganizationContext';
 
 const CreateLiveMeeting = () => {
     const navigate = useNavigate();
+    const { activeOrganization } = useOrganization();
     const [mode, setMode] = useState('create'); // 'create' or 'join'
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -74,7 +76,8 @@ const CreateLiveMeeting = () => {
             const response = await liveMeetingsAPI.create({
                 title: title.trim(),
                 description: description.trim(),
-                participantIds: selectedParticipants
+                participantIds: selectedParticipants,
+                organizationId: activeOrganization?.id,
             });
 
             setCreatedMeeting(response);

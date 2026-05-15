@@ -213,7 +213,9 @@ export const organizationsAPI = {
     },
 
     sendInvite: async (email, organizationId) => {
-        const response = await api.post('/organizations/invite', { email, organizationId });
+        const response = await api.post('/organizations/invite', { email, organizationId }, {
+            timeout: 60000,
+        });
         return response.data;
     },
 

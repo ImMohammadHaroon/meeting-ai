@@ -11,6 +11,7 @@ import communityChatRoutes from './routes/chat_community.js';
 import liveMeetingsRoutes from './routes/liveMeetings.js';
 import organizationsRoutes from './routes/organizations.js';
 import { setupSignalingHandlers } from './sockets/signalingHandler.js';
+import { verifyEmailService, isEmailConfigured } from './services/email.js';
 
 dotenv.config();
 
@@ -139,7 +140,8 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'OK',
         message: 'Server is running',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        email: isEmailConfigured() ? 'configured' : 'not_configured',
     });
 });
 
@@ -181,9 +183,10 @@ app.use((req, res) => {
 });
 
 // Start server
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, async () => {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(`Socket.io server ready for WebRTC signaling`);
+    await verifyEmailService();
 });
 
 export default app;

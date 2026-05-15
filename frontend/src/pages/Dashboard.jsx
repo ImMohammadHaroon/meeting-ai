@@ -39,14 +39,13 @@ const Dashboard = () => {
         }
     }, [location.state]);
 
-    // Fetch meetings when active organization changes
+    // Fetch meetings when org loads or user returns to dashboard
     useEffect(() => {
-        if (activeOrganization?.id) {
-            fetchMeetings(activeOrganization.id);
-        } else if (!orgLoading) {
-            fetchMeetings(null);
-        }
-    }, [activeOrganization?.id, orgLoading]);
+        if (orgLoading) return;
+
+        const orgId = activeOrganization?.id ?? null;
+        fetchMeetings(orgId);
+    }, [activeOrganization?.id, orgLoading, location.pathname]);
 
     // Show org modal if user has no organizations
     useEffect(() => {
@@ -72,7 +71,7 @@ const Dashboard = () => {
             setMeetings(data.meetings || []);
         } catch (error) {
             console.error('Failed to fetch meetings:', error);
-            setError('Failed to load meetings');
+            setError(error.response?.data?.error || 'Failed to load meetings');
         } finally {
             setLoading(false);
         }
@@ -97,7 +96,7 @@ const Dashboard = () => {
 
         try {
             await meetingsAPI.delete(meetingId);
-            await fetchMeetings();
+            await fetchMeetings(activeOrganization?.id ?? null);
         } catch (error) {
             console.error('Failed to delete meeting:', error);
             setError(error.response?.data?.error || 'Failed to delete meeting');

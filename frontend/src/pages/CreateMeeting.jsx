@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { meetingsAPI, usersAPI } from '../services/api';
+import { useOrganization } from '../contexts/OrganizationContext';
 
 const CreateMeeting = () => {
     const [title, setTitle] = useState('');
@@ -16,6 +17,7 @@ const CreateMeeting = () => {
     const [creationStep, setCreationStep] = useState(0); // 0: Idle, 1: Creating, 2: Uploading, 3: Processing
     
     const navigate = useNavigate();
+    const { activeOrganization } = useOrganization();
 
     useEffect(() => {
         fetchUsers();
@@ -97,7 +99,8 @@ const CreateMeeting = () => {
             const { meeting } = await meetingsAPI.create({
                 title,
                 description,
-                participantIds: selectedParticipants
+                participantIds: selectedParticipants,
+                organizationId: activeOrganization?.id,
             });
 
             setCreationStep(2); // Step 2: Uploading Audio

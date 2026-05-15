@@ -113,9 +113,11 @@ router.get('/', authMiddleware, async (req, res) => {
             .eq('created_by', userId)
             .order('created_at', { ascending: false });
 
-        // Filter by organization if provided
+        // Filter by organization if provided (include legacy meetings with no org for this creator)
         if (organizationId) {
-            createdQuery = createdQuery.eq('organization_id', organizationId);
+            createdQuery = createdQuery.or(
+                `organization_id.eq.${organizationId},organization_id.is.null`
+            );
         }
 
         const { data: createdMeetings, error: createdError } = await createdQuery;
@@ -144,14 +146,15 @@ router.get('/', authMiddleware, async (req, res) => {
             return res.status(500).json({ error: participantError.message });
         }
 
-        // Extract meetings from participant results and filter by org if needed
-        let participantMeetingsData = participantMeetings
-            .filter(p => p.meetings)
-            .map(p => p.meetings);
+        // Extract meetings from participant results (Supabase may return object or array)
+        let participantMeetingsData = (participantMeetings || []).flatMap((p) => {
+            if (!p.meetings) return [];
+            return Array.isArray(p.meetings) ? p.meetings : [p.meetings];
+        });
 
         if (organizationId) {
             participantMeetingsData = participantMeetingsData.filter(
-                m => m.organization_id === organizationId
+                (m) => !m.organization_id || m.organization_id === organizationId
             );
         }
 

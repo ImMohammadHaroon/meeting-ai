@@ -1,7 +1,7 @@
 import express from 'express';
 import supabase from '../config/supabase.js';
 import authMiddleware from '../middleware/auth.js';
-import { sendInvitationEmail } from '../services/email.js';
+import { sendInvitationEmail, mapEmailError } from '../services/email.js';
 
 const router = express.Router();
 
@@ -386,11 +386,17 @@ router.post('/invite', authMiddleware, async (req, res) => {
             return res.status(404).json({ error: 'You are not a member of this organization' });
         }
 
-        const org = membership.organizations;
+        const org = Array.isArray(membership.organizations)
+            ? membership.organizations[0]
+            : membership.organizations;
+
+        if (!org) {
+            return res.status(500).json({ error: 'Organization data could not be loaded' });
+        }
 
         // Validate email domain matches organization domain
         const emailDomain = email.split('@')[1]?.toLowerCase();
-        if (emailDomain !== org.domain) {
+        if (emailDomain !== org.domain?.toLowerCase()) {
             return res.status(400).json({
                 error: `Can only invite users with @${org.domain} email addresses`
             });
@@ -418,15 +424,11 @@ router.post('/invite', authMiddleware, async (req, res) => {
             email
         });
     } catch (error) {
-        console.error('Send invitation error:', error);
-        if (error.message === 'Email service not configured') {
-            return res.status(503).json({
-                error: 'Email service not configured. Please contact administrator.'
-            });
-        }
-        res.status(500).json({
-            error: 'Failed to send invitation',
-            details: error.message // Exposed for debugging
+        console.error('Send invitation error:', error?.code || '', error?.message || error);
+        const mapped = mapEmailError(error);
+        return res.status(mapped.status).json({
+            error: mapped.error,
+            ...(mapped.details ? { details: mapped.details } : {}),
         });
     }
 });

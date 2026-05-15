@@ -3,6 +3,28 @@ import fs from 'fs';
 import path from 'path';
 
 /**
+ * Supabase Storage keys only allow a safe subset of characters.
+ * User filenames often include spaces, brackets, parentheses, etc.
+ */
+export function sanitizeStorageFileName(originalName) {
+    const raw = path.basename(originalName || 'audio');
+    const extMatch = raw.match(/(\.[a-z0-9]+)$/i);
+    const ext = extMatch ? extMatch[1].toLowerCase().replace(/[^a-z0-9.]/g, '') : '';
+    const baseName = ext ? raw.slice(0, -ext.length) : raw;
+
+    const safeBase = baseName
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9._-]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .replace(/_{2,}/g, '_')
+        .slice(0, 120) || 'audio';
+
+    const safeExt = ext && /^\.[a-z0-9]+$/.test(ext) ? ext : '.m4a';
+    return `${safeBase}${safeExt}`;
+}
+
+/**
  * Upload audio file to Supabase Storage
  * @param {Object} file - Multer file object
  * @param {string} meetingId - Meeting ID for organizing files
@@ -11,7 +33,8 @@ import path from 'path';
  */
 export const uploadAudioFile = async (file, meetingId, participantId) => {
     try {
-        const fileName = `${meetingId}/${participantId}_${Date.now()}_${file.originalname}`;
+        const safeOriginalName = sanitizeStorageFileName(file.originalname);
+        const fileName = `${meetingId}/${participantId}_${Date.now()}_${safeOriginalName}`;
         const fileBuffer = fs.readFileSync(file.path);
 
         // Upload to Supabase Storage
@@ -80,5 +103,6 @@ export const downloadAudioFile = async (fileUrl) => {
 
 export default {
     uploadAudioFile,
-    downloadAudioFile
+    downloadAudioFile,
+    sanitizeStorageFileName,
 };
