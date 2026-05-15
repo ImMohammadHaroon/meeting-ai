@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Seo from '../components/Seo';
 import { Glitchy404 } from '@/components/ui/glitchy-404-1';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 
@@ -8,6 +9,8 @@ const NotFound = () => {
   const height = Math.round((232 / 860) * width);
 
   return (
+    <>
+    <Seo title="Page Not Found" description="The page you requested could not be found." noindex path="/404" />
     <div className="min-h-screen overflow-hidden bg-black text-white flex flex-col items-center justify-center px-4 py-12">
       <div className="flex w-full max-w-4xl flex-col items-center gap-10">
         <div className="w-full flex justify-center overflow-x-auto">
@@ -26,6 +29,7 @@ const NotFound = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

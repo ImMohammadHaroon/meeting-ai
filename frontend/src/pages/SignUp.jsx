@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Seo from '../components/Seo';
 import { supabase } from '../services/supabase';
 import { organizationsAPI } from '../services/api';
 import signInSignUpBg from '../assets/signin-signup.webp';
@@ -51,6 +52,12 @@ const SignUp = () => {
     };
 
     return (
+        <>
+        <Seo
+            title="Sign Up"
+            description="Create a free Meeting AI account. Transcribe meetings, generate AI notes and action items, and collaborate with your team."
+            path="/signup"
+        />
         <div
             className="min-h-screen flex items-center justify-center p-4 bg-black"
             style={{
@@ -133,6 +140,7 @@ const SignUp = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

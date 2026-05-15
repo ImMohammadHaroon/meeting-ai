@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import Seo from '../components/Seo';
+import { buildLandingJsonLd } from '../lib/structuredData';
 import {
   ArrowRight,
   Bot,
@@ -51,13 +53,14 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <Seo path="/" jsonLd={buildLandingJsonLd()} />
       <header className="sticky top-0 z-20 backdrop-blur-md bg-black/50 border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Rocket size={18} />
-            <h1 className="text-xl font-semibold">Meeting AI</h1>
+            <Rocket size={18} aria-hidden="true" />
+            <span className="text-xl font-semibold">Meeting AI</span>
           </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-white/70">
+          <nav className="hidden md:flex items-center gap-6 text-sm text-white/70" aria-label="Primary">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#workflow" className="hover:text-white transition-colors">Workflow</a>
             <a href="#why" className="hover:text-white transition-colors">Why Us</a>

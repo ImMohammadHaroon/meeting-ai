@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Seo from '../components/Seo';
 import { supabase } from '../services/supabase';
 import { organizationsAPI } from '../services/api';
 import signInSignUpBg from '../assets/signin-signup.webp';
@@ -45,6 +46,12 @@ const SignIn = () => {
     };
 
     return (
+        <>
+        <Seo
+            title="Sign In"
+            description="Sign in to Meeting AI to access your meetings, transcripts, AI summaries, and team workspaces."
+            path="/signin"
+        />
         <div
             className="min-h-screen flex items-center justify-center p-4 bg-black"
             style={{
@@ -113,6 +120,7 @@ const SignIn = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

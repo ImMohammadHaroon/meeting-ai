@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /create-meeting
+Disallow: /create-group-meeting
+Disallow: /create-live-meeting
+Disallow: /meetings/
+Disallow: /live-meeting/
+
+Sitemap: https://meetingai.dev/sitemap.xml

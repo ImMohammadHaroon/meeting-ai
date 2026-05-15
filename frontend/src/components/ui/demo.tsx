@@ -14,7 +14,7 @@ export function ScrollImageSection() {
       <ContainerScroll titleComponent={<div className="h-0" />}>
         <img
           src={meetingDashboardImage}
-          alt="Meeting collaboration"
+          alt="Meeting AI dashboard showing meeting list, transcripts, and AI-generated summaries"
           className="mx-auto rounded-2xl object-cover h-full w-full object-center"
           draggable={false}
         />

@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import Seo from './Seo';
 import { useAuth } from '../hooks/useAuth';
 
 const ProtectedRoute = ({ children }) => {
@@ -19,7 +20,12 @@ const ProtectedRoute = ({ children }) => {
         return <Navigate to="/signin" replace />;
     }
 
-    return children;
+    return (
+        <>
+            <Seo noindex path="/app" />
+            {children}
+        </>
+    );
 };
 
 export default ProtectedRoute;
