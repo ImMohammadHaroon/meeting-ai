@@ -193,6 +193,13 @@ router.get('/:id', authMiddleware, async (req, res) => {
           id,
           user_id,
           audio_file_url
+        ),
+        live_meetings (
+          id,
+          recording_url,
+          status,
+          started_at,
+          ended_at
         )
       `)
             .eq('id', id)
@@ -200,6 +207,13 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
         if (meetingError) {
             return res.status(404).json({ error: 'Meeting not found' });
+        }
+
+        if (meeting.live_meetings) {
+            meeting.live_meeting = Array.isArray(meeting.live_meetings)
+                ? meeting.live_meetings[0]
+                : meeting.live_meetings;
+            delete meeting.live_meetings;
         }
 
         // Enrich participants with user data
@@ -522,12 +536,30 @@ router.get('/:id/status', authMiddleware, async (req, res) => {
 
         const { data: meeting, error } = await supabase
             .from('meetings')
-            .select('processed, notes, transcript')
+            .select('processed, notes, transcript, type')
             .eq('id', id)
             .single();
 
         if (error) {
             return res.status(404).json({ error: 'Meeting not found' });
+        }
+
+        if (!meeting.processed && meeting.type === 'live') {
+            const { data: liveMeeting } = await supabase
+                .from('live_meetings')
+                .select('recording_url, status')
+                .eq('meeting_id', id)
+                .maybeSingle();
+
+            if (liveMeeting?.status === 'ended' && !liveMeeting?.recording_url) {
+                const noRecordingNotes = 'No recording was captured for this live meeting. End the meeting from the host device with microphone access enabled.';
+                await supabase
+                    .from('meetings')
+                    .update({ processed: true, notes: noRecordingNotes, transcript: null })
+                    .eq('id', id);
+                meeting.processed = true;
+                meeting.notes = noRecordingNotes;
+            }
         }
 
         res.json({

@@ -291,11 +291,25 @@ router.post('/:id/end', authMiddleware, async (req, res) => {
 
         res.json({ message: 'Meeting ended', status: 'ended' });
 
-        // Trigger processing asynchronously (if recording exists)
-        if (liveMeeting.recording_url) {
-            processLiveMeetingAsync(liveMeeting).catch(err => {
+        const { data: freshLiveMeeting } = await supabase
+            .from('live_meetings')
+            .select('*, meetings(*)')
+            .eq('id', id)
+            .single();
+
+        if (freshLiveMeeting?.recording_url) {
+            processLiveMeetingAsync(freshLiveMeeting).catch(err => {
                 console.error('Background processing error:', err);
             });
+        } else {
+            await supabase
+                .from('meetings')
+                .update({
+                    processed: true,
+                    notes: 'No recording was captured for this live meeting. End the meeting from the host device with microphone access enabled.',
+                    transcript: null
+                })
+                .eq('id', liveMeeting.meeting_id);
         }
     } catch (error) {
         console.error('End meeting error:', error);
@@ -330,11 +344,15 @@ router.post('/:id/upload-recording', authMiddleware, upload.single('recording'),
         // Upload to Supabase Storage
         const fileUrl = await uploadAudioFile(file, liveMeeting.meetings.id, 'live-recording');
 
-        // Save recording URL to live_meetings
         await supabase
             .from('live_meetings')
             .update({ recording_url: fileUrl })
             .eq('id', id);
+
+        await supabase
+            .from('meetings')
+            .update({ audio_file_url: fileUrl })
+            .eq('id', liveMeeting.meetings.id);
 
         // Save to meeting_recordings table
         await supabase

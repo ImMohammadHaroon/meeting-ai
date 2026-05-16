@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { SOCKET_URL } from '../services/api';
+import { enhanceAudioStream, getVoiceCaptureConstraints } from '../utils/audioEnhancement';
 
 
 // ICE servers configuration (Google STUN servers)
@@ -30,6 +31,8 @@ export const useWebRTC = (roomId, userId, userName) => {
 
     const socketRef = useRef(null);
     const localStreamRef = useRef(null);
+    const rawMicStreamRef = useRef(null);
+    const audioEnhancementCleanupRef = useRef(null);
     const peersRef = useRef(new Map());
 
     useEffect(() => {
@@ -137,17 +140,23 @@ export const useWebRTC = (roomId, userId, userName) => {
         };
     }, [roomId, userId, userName]);
 
-    // Initialize local media stream
+    // Initialize local media stream (browser DSP + Web Audio enhancement)
     const initializeMedia = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                },
+            const rawStream = await navigator.mediaDevices.getUserMedia({
+                audio: getVoiceCaptureConstraints(),
                 video: false
             });
+            rawMicStreamRef.current = rawStream;
+
+            let stream = rawStream;
+            try {
+                const { stream: enhanced, cleanup } = await enhanceAudioStream(rawStream);
+                audioEnhancementCleanupRef.current = cleanup;
+                stream = enhanced;
+            } catch (enhanceErr) {
+                console.warn('RNNoise / audio enhancement unavailable, using raw mic:', enhanceErr);
+            }
 
             localStreamRef.current = stream;
             setLocalStream(stream);
@@ -364,10 +373,16 @@ export const useWebRTC = (roomId, userId, userName) => {
 
     // Cleanup function
     const cleanup = () => {
-        // Stop local stream
-        if (localStreamRef.current) {
+        audioEnhancementCleanupRef.current?.();
+        audioEnhancementCleanupRef.current = null;
+
+        if (rawMicStreamRef.current) {
+            rawMicStreamRef.current.getTracks().forEach(track => track.stop());
+            rawMicStreamRef.current = null;
+        } else if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
         }
+        localStreamRef.current = null;
 
         // Close all peer connections
         peersRef.current.forEach(peer => {

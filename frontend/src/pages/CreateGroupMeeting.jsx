@@ -20,12 +20,16 @@ const CreateGroupMeeting = () => {
     const { activeOrganization } = useOrganization();
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        if (activeOrganization?.id) {
+            fetchUsers();
+        } else {
+            setLoadingUsers(false);
+        }
+    }, [activeOrganization?.id]);
 
     const fetchUsers = async () => {
         try {
-            const data = await usersAPI.getAll();
+            const data = await usersAPI.getAll(activeOrganization.id);
             setParticipants(data.users || []);
         } catch (error) {
             console.error('Failed to fetch users:', error);

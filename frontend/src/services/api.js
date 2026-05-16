@@ -115,8 +115,9 @@ export const authAPI = {
 
 // Users API
 export const usersAPI = {
-    getAll: async () => {
-        const response = await api.get('/users');
+    getAll: async (organizationId) => {
+        const params = organizationId ? { organizationId } : {};
+        const response = await api.get('/users', { params });
         return response.data;
     }
 };
@@ -292,7 +293,8 @@ export const liveMeetingsAPI = {
         const response = await api.post(`/live-meetings/${id}/upload-recording`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
-            }
+            },
+            timeout: 120000
         });
         return response.data;
     }

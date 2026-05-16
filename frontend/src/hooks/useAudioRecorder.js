@@ -1,26 +1,34 @@
 import { useRef, useState } from 'react';
 
+const PREFERRED_MIME_TYPES = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg'
+];
+
+const getSupportedMimeType = () => {
+    if (typeof MediaRecorder === 'undefined') return '';
+    return PREFERRED_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type)) || '';
+};
+
 /**
  * Custom hook for recording audio during live meeting
  * Uses MediaRecorder API for browser-based recording
- * @returns {Object} - Recording controls and state
  */
 export const useAudioRecorder = () => {
     const [isRecording, setIsRecording] = useState(false);
     const [recordedBlob, setRecordedBlob] = useState(null);
     const mediaRecorderRef = useRef(null);
     const chunksRef = useRef([]);
+    const stopResolveRef = useRef(null);
 
-    /**
-     * Start recording with the given audio stream
-     * @param {MediaStream} stream - The audio stream to record
-     */
     const startRecording = (stream) => {
         try {
-            // Create MediaRecorder with WebM format
-            const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'audio/webm;codecs=opus'
-            });
+            const mimeType = getSupportedMimeType();
+            const options = mimeType ? { mimeType } : undefined;
+            const mediaRecorder = new MediaRecorder(stream, options);
+            const blobType = mimeType || 'audio/webm';
 
             mediaRecorderRef.current = mediaRecorder;
             chunksRef.current = [];
@@ -32,32 +40,56 @@ export const useAudioRecorder = () => {
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+                const blob = chunksRef.current.length > 0
+                    ? new Blob(chunksRef.current, { type: blobType })
+                    : null;
                 setRecordedBlob(blob);
                 setIsRecording(false);
+                if (stopResolveRef.current) {
+                    stopResolveRef.current(blob);
+                    stopResolveRef.current = null;
+                }
             };
 
-            mediaRecorder.start(1000); // Collect data every second
+            mediaRecorder.onerror = (event) => {
+                console.error('MediaRecorder error:', event.error);
+                setIsRecording(false);
+                if (stopResolveRef.current) {
+                    stopResolveRef.current(null);
+                    stopResolveRef.current = null;
+                }
+            };
+
+            mediaRecorder.start(1000);
             setIsRecording(true);
-            console.log('Recording started');
+            console.log('Recording started', mimeType || '(browser default)');
         } catch (error) {
             console.error('Failed to start recording:', error);
         }
     };
 
     /**
-     * Stop recording
+     * Stop recording and resolve with the final blob when MediaRecorder finishes.
+     * @returns {Promise<Blob|null>}
      */
     const stopRecording = () => {
-        if (mediaRecorderRef.current && isRecording) {
-            mediaRecorderRef.current.stop();
+        return new Promise((resolve) => {
+            const recorder = mediaRecorderRef.current;
+            if (!recorder || recorder.state === 'inactive') {
+                const mimeType = getSupportedMimeType() || 'audio/webm';
+                const existing = chunksRef.current.length > 0
+                    ? new Blob(chunksRef.current, { type: mimeType })
+                    : null;
+                resolve(existing);
+                return;
+            }
+
+            stopResolveRef.current = resolve;
+            recorder.stop();
             console.log('Recording stopped');
-        }
+        });
     };
 
-    /**
-     * Reset recorded blob
-     */
     const resetRecording = () => {
         setRecordedBlob(null);
         chunksRef.current = [];

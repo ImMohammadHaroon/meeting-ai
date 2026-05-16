@@ -11,24 +11,38 @@ const router = express.Router();
 router.get('/', authMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
+        let organizationId = req.query.organizationId
+            || req.user.user_metadata?.active_organization_id;
 
-        // First, get the user's organization
+        if (!organizationId) {
+            const { data: memberships } = await supabase
+                .from('organization_members')
+                .select('organization_id')
+                .eq('user_id', userId)
+                .limit(1);
+
+            organizationId = memberships?.[0]?.organization_id;
+        }
+
+        if (!organizationId) {
+            return res.json({ users: [] });
+        }
+
         const { data: membership } = await supabase
             .from('organization_members')
             .select('organization_id')
             .eq('user_id', userId)
+            .eq('organization_id', organizationId)
             .single();
 
-        // If user has no organization, return empty list
         if (!membership) {
-            return res.json({ users: [] });
+            return res.status(403).json({ error: 'You are not a member of this organization' });
         }
 
-        // Get all members from the same organization
         const { data: orgMembers, error: membersError } = await supabase
             .from('organization_members')
             .select('user_id')
-            .eq('organization_id', membership.organization_id);
+            .eq('organization_id', organizationId);
 
         if (membersError) {
             console.error('Get org members error:', membersError);

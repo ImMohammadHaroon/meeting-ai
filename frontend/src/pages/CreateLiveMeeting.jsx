@@ -25,12 +25,16 @@ const CreateLiveMeeting = () => {
     const [creationStep, setCreationStep] = useState(0); // 0: Idle, 1: Creating
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        if (activeOrganization?.id) {
+            fetchUsers();
+        } else {
+            setLoadingUsers(false);
+        }
+    }, [activeOrganization?.id]);
 
     const fetchUsers = async () => {
         try {
-            const { users } = await usersAPI.getAll();
+            const { users } = await usersAPI.getAll(activeOrganization.id);
             const { data: { user } } = await supabase.auth.getUser();
 
             // Filter out current user

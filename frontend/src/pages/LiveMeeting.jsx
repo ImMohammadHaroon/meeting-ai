@@ -50,10 +50,25 @@ function LiveMeeting() {
 
     useEffect(() => {
         if (liveMeeting && currentUser) {
-            // Join meeting (record in database)
             liveMeetingsAPI.join(id).catch(console.error);
 
-            // Start timer
+            const ensureLive = async () => {
+                if (
+                    meeting?.created_by === currentUser.id &&
+                    liveMeeting.status !== 'live' &&
+                    liveMeeting.status !== 'ended'
+                ) {
+                    try {
+                        await liveMeetingsAPI.start(id);
+                        const response = await liveMeetingsAPI.getById(id);
+                        setLiveMeeting(response.liveMeeting);
+                    } catch (err) {
+                        console.error('Failed to start meeting:', err);
+                    }
+                }
+            };
+            ensureLive();
+
             timerRef.current = setInterval(() => {
                 setElapsedTime(prev => prev + 1);
             }, 1000);
@@ -64,7 +79,7 @@ function LiveMeeting() {
                 clearInterval(timerRef.current);
             }
         };
-    }, [liveMeeting, currentUser, id]);
+    }, [liveMeeting, currentUser, meeting, id]);
 
     // Start recording when local stream is available
     useEffect(() => {
@@ -129,23 +144,21 @@ function LiveMeeting() {
         setIsEnding(true);
 
         try {
-            // Stop recording
+            let blob = recordedBlob;
             if (isRecording) {
-                stopRecording();
+                blob = await stopRecording();
             }
 
-            // Upload recording
-            if (recordedBlob) {
-                await liveMeetingsAPI.uploadRecording(id, recordedBlob);
+            if (blob && blob.size > 0) {
+                await liveMeetingsAPI.uploadRecording(id, blob);
+            } else {
+                console.warn('No meeting recording captured');
             }
 
-            // End meeting
             await liveMeetingsAPI.end(id);
 
-            // Leave WebRTC
             webrtcLeave();
 
-            // Navigate to meeting details
             navigate(`/meetings/${liveMeeting.meeting_id}`);
         } catch (err) {
             console.error('Error ending meeting:', err);

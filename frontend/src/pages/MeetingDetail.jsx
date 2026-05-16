@@ -30,13 +30,19 @@ const MeetingDetail = () => {
         fetchMeetingDetails();
         getCurrentUser();
 
-        // Poll for processing status if not processed
         const interval = setInterval(() => {
             checkProcessingStatus();
         }, 5000);
 
         return () => clearInterval(interval);
     }, [id]);
+
+    useEffect(() => {
+        if (meeting?.processed) {
+            return;
+        }
+        checkProcessingStatus();
+    }, [meeting?.processed]);
 
     // Poll for community messages when on chat tab
     useEffect(() => {
@@ -276,8 +282,8 @@ const MeetingDetail = () => {
                     <div className="h-full flex flex-col p-3 md:p-6">
                         <h2 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 text-gradient flex-shrink-0">Meeting Audio</h2>
 
-                        {/* Group Meeting Audio */}
-                        {meeting.type === 'group' && meeting.audio_file_url ? (
+                        {/* Live or group meeting recording */}
+                        {(meeting.type === 'live' || meeting.type === 'group') && (meeting.audio_file_url || meeting.live_meeting?.recording_url) ? (
                             <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                 <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all duration-300">
                                     <div className="flex items-start gap-4 mb-4">
@@ -286,10 +292,12 @@ const MeetingDetail = () => {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-white font-medium text-lg mb-1">
-                                                Group Meeting Audio
+                                                {meeting.type === 'live' ? 'Live Meeting Recording' : 'Group Meeting Audio'}
                                             </p>
                                             <p className="text-white/50 text-sm">
-                                                Complete recording of the group discussion
+                                                {meeting.type === 'live'
+                                                    ? 'Recording captured when the host ended the meeting'
+                                                    : 'Complete recording of the group discussion'}
                                             </p>
                                         </div>
                                     </div>
@@ -302,11 +310,9 @@ const MeetingDetail = () => {
                                                 borderRadius: '8px'
                                             }}
                                         >
-                                            <source src={meeting.audio_file_url} type="audio/mpeg" />
-                                            <source src={meeting.audio_file_url} type="audio/wav" />
-                                            <source src={meeting.audio_file_url} type="audio/mp4" />
-                                            <source src={meeting.audio_file_url} type="audio/webm" />
-                                            <source src={meeting.audio_file_url} type="audio/ogg" />
+                                            <source src={meeting.audio_file_url || meeting.live_meeting?.recording_url} type="audio/webm" />
+                                            <source src={meeting.audio_file_url || meeting.live_meeting?.recording_url} type="audio/mpeg" />
+                                            <source src={meeting.audio_file_url || meeting.live_meeting?.recording_url} type="audio/ogg" />
                                             Your browser does not support the audio element.
                                         </audio>
                                     </div>
@@ -363,7 +369,9 @@ const MeetingDetail = () => {
                                         No audio files uploaded yet
                                     </p>
                                     <p className="text-white/30 text-sm mt-2">
-                                        {meeting.type === 'group'
+                                        {meeting.type === 'live'
+                                            ? 'Recording appears here after the host ends the meeting'
+                                            : meeting.type === 'group'
                                             ? 'Upload a group audio recording to see it here'
                                             : 'Upload participant audio files to see them here'
                                         }
