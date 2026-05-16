@@ -6,7 +6,7 @@ import { DotGlobeHero } from "@/components/ui/globe-hero";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { ArrowRight, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
-import meetingDashboardImage from "../../assets/meeting-dashboard.png";
+import meetingDashboardImage from "../../assets/meeting-dashboard.webp";
 
 export function ScrollImageSection() {
   return (
