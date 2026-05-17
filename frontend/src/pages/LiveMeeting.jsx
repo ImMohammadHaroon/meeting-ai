@@ -4,7 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { liveMeetingsAPI } from '../services/api';
 import { supabase } from '../services/supabase';
 import { useWebRTC } from '../hooks/useWebRTC';
-import { useAudioRecorder } from '../hooks/useAudioRecorder';
+import { useMeetingRecording } from '../hooks/useMeetingRecording';
 import { useIsMdUp } from '../hooks/useMediaQuery';
 import MobileDrawer from '../components/MobileDrawer';
 
@@ -40,8 +40,18 @@ function LiveMeeting() {
         currentUser?.user_metadata?.full_name || currentUser?.email || 'User'
     );
 
-    // Audio recorder hook
-    const { isRecording, recordedBlob, startRecording, stopRecording } = useAudioRecorder();
+    const isCreator = meeting && currentUser && meeting.created_by === currentUser.id;
+
+    // Host records one mixed file: local mic + all remote participants
+    const {
+        isRecording,
+        finalizeRecording,
+        disposeWithoutSave
+    } = useMeetingRecording({
+        enabled: Boolean(isCreator && liveMeeting?.status === 'live'),
+        localStream,
+        peers
+    });
 
     useEffect(() => {
         fetchCurrentUser();
@@ -80,13 +90,6 @@ function LiveMeeting() {
             }
         };
     }, [liveMeeting, currentUser, meeting, id]);
-
-    // Start recording when local stream is available
-    useEffect(() => {
-        if (localStream && !isRecording && liveMeeting?.status === 'live') {
-            startRecording(localStream);
-        }
-    }, [localStream, liveMeeting]);
 
     // Update audio/video elements for remote streams
     useEffect(() => {
@@ -144,10 +147,7 @@ function LiveMeeting() {
         setIsEnding(true);
 
         try {
-            let blob = recordedBlob;
-            if (isRecording) {
-                blob = await stopRecording();
-            }
+            const blob = await finalizeRecording();
 
             if (blob && blob.size > 0) {
                 await liveMeetingsAPI.uploadRecording(id, blob);
@@ -169,7 +169,7 @@ function LiveMeeting() {
 
     const handleLeaveMeeting = async () => {
         try {
-            // Leave WebRTC
+            disposeWithoutSave();
             webrtcLeave();
 
             // Record leave in database
@@ -189,8 +189,6 @@ function LiveMeeting() {
         const secs = seconds % 60;
         return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
-
-    const isCreator = meeting && currentUser && meeting.created_by === currentUser.id;
 
     // Check if anyone is sharing screen
     const activeScreenShare = Array.from(peers.entries()).find(([_, peer]) =>
@@ -270,7 +268,11 @@ function LiveMeeting() {
                         <div className="flex items-center gap-2">
                             <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`}></span>
                             <span className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                                {liveMeeting.status === 'live' ? 'Live' : 'Waiting'}
+                                {liveMeeting.status === 'live'
+                                    ? isRecording
+                                        ? 'Live · Recording'
+                                        : 'Live'
+                                    : 'Waiting'}
                             </span>
                         </div>
                     </div>

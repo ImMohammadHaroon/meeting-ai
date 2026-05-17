@@ -25,6 +25,15 @@ export const useAudioRecorder = () => {
 
     const startRecording = (stream) => {
         try {
+            if (!stream?.getAudioTracks?.().length) {
+                console.warn('Cannot record: stream has no audio tracks');
+                return;
+            }
+
+            if (mediaRecorderRef.current?.state === 'recording') {
+                return;
+            }
+
             const mimeType = getSupportedMimeType();
             const options = mimeType ? { mimeType } : undefined;
             const mediaRecorder = new MediaRecorder(stream, options);
