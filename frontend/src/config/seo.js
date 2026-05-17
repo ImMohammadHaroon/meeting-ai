@@ -16,6 +16,7 @@ export const DEFAULT_KEYWORDS = [
   'WebRTC meetings',
   'team collaboration',
   'meeting assistant',
+  'meeting owl',
 ].join(', ');
 
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`;
