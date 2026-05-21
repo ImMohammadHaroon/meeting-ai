@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { meetingsAPI } from '../services/api';
 import { supabase } from '../services/supabase';
@@ -6,8 +6,11 @@ import OrganizationSetupModal from '../components/OrganizationSetupModal';
 import OrganizationPanel from '../components/OrganizationPanel';
 import OrganizationSwitcher from '../components/OrganizationSwitcher';
 import { useOrganization } from '../contexts/OrganizationContext';
+import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus';
 import { GlowingEffect } from '../components/ui/glowing-effect';
 import meetingBg from '../assets/meeting.webp';
+
+const MEETINGS_POLL_INTERVAL_MS = 30000;
 
 const Dashboard = () => {
     const [meetings, setMeetings] = useState([]);
@@ -39,13 +42,42 @@ const Dashboard = () => {
         }
     }, [location.state]);
 
+    const fetchMeetings = useCallback(async (orgId = null, { silent = false } = {}) => {
+        try {
+            if (!silent) setLoading(true);
+            const data = await meetingsAPI.getAll(orgId);
+            setMeetings(data.meetings || []);
+            setError('');
+        } catch (error) {
+            console.error('Failed to fetch meetings:', error);
+            setError(error.response?.data?.error || 'Failed to load meetings');
+        } finally {
+            if (!silent) setLoading(false);
+        }
+    }, []);
+
     // Fetch meetings when org loads or user returns to dashboard
     useEffect(() => {
         if (orgLoading) return;
 
         const orgId = activeOrganization?.id ?? null;
         fetchMeetings(orgId);
-    }, [activeOrganization?.id, orgLoading, location.pathname]);
+
+        const interval = setInterval(() => {
+            fetchMeetings(orgId, { silent: true });
+        }, MEETINGS_POLL_INTERVAL_MS);
+
+        return () => clearInterval(interval);
+    }, [activeOrganization?.id, orgLoading, location.pathname, fetchMeetings]);
+
+    useRefetchOnFocus(
+        useCallback(() => {
+            if (!orgLoading) {
+                fetchMeetings(activeOrganization?.id ?? null, { silent: true });
+            }
+        }, [orgLoading, activeOrganization?.id, fetchMeetings]),
+        !orgLoading
+    );
 
     // Show org modal if user has no organizations
     useEffect(() => {
@@ -62,19 +94,6 @@ const Dashboard = () => {
     const handleOrgSetupComplete = async (org) => {
         await refreshOrganizations();
         setShowOrgModal(false);
-    };
-
-    const fetchMeetings = async (orgId = null) => {
-        try {
-            setLoading(true);
-            const data = await meetingsAPI.getAll(orgId);
-            setMeetings(data.meetings || []);
-        } catch (error) {
-            console.error('Failed to fetch meetings:', error);
-            setError(error.response?.data?.error || 'Failed to load meetings');
-        } finally {
-            setLoading(false);
-        }
     };
 
     const handleSignOut = async () => {

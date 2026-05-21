@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { meetingsAPI, communityChatAPI } from '../services/api';
@@ -6,7 +6,11 @@ import { supabase } from '../services/supabase';
 import Chatbot from '../components/Chatbot';
 import ReactMarkdown from 'react-markdown';
 import { useIsMdUp } from '../hooks/useMediaQuery';
+import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus';
 import MobileDrawer from '../components/MobileDrawer';
+
+const STATUS_POLL_INTERVAL_MS = 5000;
+const CHAT_POLL_INTERVAL_MS = 3000;
 
 const MeetingDetail = () => {
     const { id } = useParams();
@@ -26,61 +30,71 @@ const MeetingDetail = () => {
     const [isNavOpen, setIsNavOpen] = useState(false);
     const isMdUp = useIsMdUp();
 
-    useEffect(() => {
-        fetchMeetingDetails();
-        getCurrentUser();
-
-        const interval = setInterval(() => {
-            checkProcessingStatus();
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [id]);
-
-    useEffect(() => {
-        if (meeting?.processed) {
-            return;
-        }
-        checkProcessingStatus();
-    }, [meeting?.processed]);
-
-    // Poll for community messages when on chat tab
-    useEffect(() => {
-        if (activeTab === 'community-chat') {
-            fetchCommunityMessages();
-            const chatInterval = setInterval(() => {
-                fetchCommunityMessages();
-            }, 3000);
-            return () => clearInterval(chatInterval);
-        }
-    }, [activeTab, id]);
-
-    const fetchMeetingDetails = async () => {
+    const fetchMeetingDetails = useCallback(async ({ silent = false } = {}) => {
         try {
+            if (!silent) setLoading(true);
             const data = await meetingsAPI.getById(id);
             setMeeting(data.meeting);
             setTasks(data.tasks || []);
-            setLoading(false);
+            setError('');
         } catch (error) {
             console.error('Failed to fetch meeting:', error);
             setError('Failed to load meeting details');
-            setLoading(false);
+        } finally {
+            if (!silent) setLoading(false);
         }
-    };
+    }, [id]);
 
-    const checkProcessingStatus = async () => {
-        try {
-            const status = await meetingsAPI.getStatus(id);
-            setProcessingStatus(status);
+    useEffect(() => {
+        fetchMeetingDetails();
+        getCurrentUser();
+    }, [id, fetchMeetingDetails]);
 
-            // Refresh data if newly processed
-            if (status.processed && !meeting?.processed) {
-                fetchMeetingDetails();
+    // Poll processing status until complete, then load full meeting data
+    useEffect(() => {
+        if (!id || meeting?.processed) return;
+
+        const pollStatus = async () => {
+            try {
+                const status = await meetingsAPI.getStatus(id);
+                setProcessingStatus(status);
+
+                if (status.processed) {
+                    await fetchMeetingDetails({ silent: true });
+                }
+            } catch (error) {
+                console.error('Failed to check status:', error);
             }
+        };
+
+        pollStatus();
+        const interval = setInterval(pollStatus, STATUS_POLL_INTERVAL_MS);
+        return () => clearInterval(interval);
+    }, [id, meeting?.processed, fetchMeetingDetails]);
+
+    useRefetchOnFocus(
+        useCallback(() => {
+            fetchMeetingDetails({ silent: true });
+        }, [fetchMeetingDetails])
+    );
+
+    const fetchCommunityMessages = useCallback(async () => {
+        try {
+            const data = await communityChatAPI.getMessages(id);
+            setCommunityMessages(data.messages || []);
         } catch (error) {
-            console.error('Failed to check status:', error);
+            console.error('Failed to fetch community messages:', error);
         }
-    };
+    }, [id]);
+
+    // Poll for community messages when on chat tab
+    useEffect(() => {
+        if (activeTab !== 'community-chat') return;
+
+        fetchCommunityMessages();
+        const chatInterval = setInterval(fetchCommunityMessages, CHAT_POLL_INTERVAL_MS);
+        return () => clearInterval(chatInterval);
+    }, [activeTab, fetchCommunityMessages]);
 
     const getCurrentUser = async () => {
         try {
@@ -88,15 +102,6 @@ const MeetingDetail = () => {
             setCurrentUserId(user?.id);
         } catch (error) {
             console.error('Failed to get current user:', error);
-        }
-    };
-
-    const fetchCommunityMessages = async () => {
-        try {
-            const data = await communityChatAPI.getMessages(id);
-            setCommunityMessages(data.messages || []);
-        } catch (error) {
-            console.error('Failed to fetch community messages:', error);
         }
     };
 

@@ -62,11 +62,21 @@ const api = axios.create({
     }
 });
 
-// Add response interceptor to log errors
+// Retry once on 401 after refreshing the session; log CORS/network errors
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
-        // Log CORS errors with helpful information
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+            if (!refreshError && session?.access_token) {
+                originalRequest.headers.Authorization = `Bearer ${session.access_token}`;
+                return api(originalRequest);
+            }
+        }
+
         if (typeof window !== 'undefined') {
             const isCorsError = error.message.includes('CORS') || error.message.includes('cors') || error.code === 'ERR_NETWORK';
             if (isCorsError) {

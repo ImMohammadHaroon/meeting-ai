@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { liveMeetingsAPI } from '../services/api';
@@ -6,7 +6,10 @@ import { supabase } from '../services/supabase';
 import { useWebRTC } from '../hooks/useWebRTC';
 import { useMeetingRecording } from '../hooks/useMeetingRecording';
 import { useIsMdUp } from '../hooks/useMediaQuery';
+import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus';
 import MobileDrawer from '../components/MobileDrawer';
+
+const LIVE_MEETING_POLL_INTERVAL_MS = 10000;
 
 function LiveMeeting() {
     const { id } = useParams();
@@ -20,6 +23,8 @@ function LiveMeeting() {
     const [error, setError] = useState('');
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const timerRef = useRef(null);
+    const redirectScheduledRef = useRef(false);
+    const liveMeetingStatusRef = useRef(null);
     const isMdUp = useIsMdUp();
 
     // WebRTC hook
@@ -53,10 +58,48 @@ function LiveMeeting() {
         peers
     });
 
+    const fetchMeetingDetails = useCallback(async () => {
+        try {
+            const response = await liveMeetingsAPI.getById(id);
+            const prevStatus = liveMeetingStatusRef.current;
+            liveMeetingStatusRef.current = response.liveMeeting.status;
+            setLiveMeeting(response.liveMeeting);
+            setMeeting(response.meeting);
+            setParticipants(response.meeting.meeting_participants || []);
+
+            if (
+                response.liveMeeting.status === 'ended' &&
+                prevStatus !== 'ended' &&
+                !redirectScheduledRef.current
+            ) {
+                redirectScheduledRef.current = true;
+                setError('This meeting has ended');
+                setTimeout(() => navigate(`/meetings/${response.liveMeeting.meeting_id}`), 3000);
+            }
+        } catch (err) {
+            console.error('Error fetching meeting:', err);
+            if (!redirectScheduledRef.current) {
+                redirectScheduledRef.current = true;
+                setError('Failed to load meeting. Redirecting...');
+                setTimeout(() => navigate('/dashboard'), 3000);
+            }
+        }
+    }, [id, navigate]);
+
     useEffect(() => {
         fetchCurrentUser();
         fetchMeetingDetails();
-    }, [id]);
+    }, [id, fetchMeetingDetails]);
+
+    // Keep live meeting state in sync (e.g. host ended while tab was in background)
+    useEffect(() => {
+        if (!id || liveMeeting?.status === 'ended') return;
+
+        const interval = setInterval(fetchMeetingDetails, LIVE_MEETING_POLL_INTERVAL_MS);
+        return () => clearInterval(interval);
+    }, [id, liveMeeting?.status, fetchMeetingDetails]);
+
+    useRefetchOnFocus(fetchMeetingDetails, liveMeeting?.status !== 'ended');
 
     useEffect(() => {
         if (liveMeeting && currentUser) {
@@ -119,24 +162,6 @@ function LiveMeeting() {
     const fetchCurrentUser = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         setCurrentUser(user);
-    };
-
-    const fetchMeetingDetails = async () => {
-        try {
-            const response = await liveMeetingsAPI.getById(id);
-            setLiveMeeting(response.liveMeeting);
-            setMeeting(response.meeting);
-            setParticipants(response.meeting.meeting_participants || []);
-
-            if (response.liveMeeting.status === 'ended') {
-                setError('This meeting has ended');
-                setTimeout(() => navigate(`/meetings/${response.liveMeeting.meeting_id}`), 3000);
-            }
-        } catch (err) {
-            console.error('Error fetching meeting:', err);
-            setError('Failed to load meeting. Redirecting...');
-            setTimeout(() => navigate('/dashboard'), 3000);
-        }
     };
 
     const handleEndMeeting = async () => {
