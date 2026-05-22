@@ -18,6 +18,7 @@
 10. [Environment Variables](#10-environment-variables)
 11. [Deployment](#11-deployment)
 12. [Development Setup](#12-development-setup)
+13. [Chrome Extension](#13-chrome-extension)
 
 ---
 
@@ -620,6 +621,22 @@ Access at `http://localhost:5173`
 1. Create Supabase project
 2. Create tables with RLS policies
 3. Create storage bucket: `meeting-audio` (public)
+
+---
+
+## 13. Chrome Extension
+
+A **Manifest V3** Chrome extension records Google Meet tab audio and uploads it to the same backend pipeline (Whisper + LLaMA).
+
+| Resource | Path |
+|----------|------|
+| Quick start | [extension/README.md](extension/README.md) |
+| Full documentation | [extension/EXTENSION_DOCUMENTATION.md](extension/EXTENSION_DOCUMENTATION.md) |
+| Optional DB migration | [extension/migrations/add_source_column.sql](extension/migrations/add_source_column.sql) |
+
+**Load locally:** `chrome://extensions` → Developer mode → Load unpacked → `extension/` folder.
+
+**Key API routes (extension-only):** `GET /api/organizations/google-meet`, `POST /api/meetings/:id/upload/extension`.
 
 ---
 

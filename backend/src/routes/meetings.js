@@ -15,11 +15,28 @@ const upload = multer({
         files: 10
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/mp4', 'audio/ogg'];
-        if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(mp3|wav|m4a|ogg)$/i)) {
+        const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/mp4', 'audio/ogg', 'audio/webm', 'video/webm'];
+        if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(mp3|wav|m4a|ogg|webm)$/i)) {
             cb(null, true);
         } else {
-            cb(new Error('Invalid file type. Only MP3, WAV, M4A, and OGG files are allowed'));
+            cb(new Error('Invalid file type. Only MP3, WAV, M4A, OGG, and WebM files are allowed'));
+        }
+    }
+});
+
+// Extension uploads (WebM tab capture, larger files)
+const extensionUpload = multer({
+    dest: 'temp/',
+    limits: {
+        fileSize: 100 * 1024 * 1024, // 100MB
+        files: 1
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['audio/webm', 'video/webm', 'audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/mp4', 'audio/ogg'];
+        if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(webm|mp3|wav|m4a|ogg)$/i)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only WebM, MP3, WAV, M4A, and OGG files are allowed'));
         }
     }
 });
@@ -30,7 +47,8 @@ const upload = multer({
  */
 router.post('/', authMiddleware, async (req, res) => {
     try {
-        const { title, description, participantIds, organizationId } = req.body;
+        const { title, description, participantIds, organizationId, organization_id, source } = req.body;
+        const orgId = organizationId || organization_id || null;
         const userId = req.user.id;
 
         if (!title) {
@@ -38,12 +56,12 @@ router.post('/', authMiddleware, async (req, res) => {
         }
 
         // If organizationId provided, verify user is member
-        if (organizationId) {
+        if (orgId) {
             const { data: membership } = await supabase
                 .from('organization_members')
                 .select('id')
                 .eq('user_id', userId)
-                .eq('organization_id', organizationId)
+                .eq('organization_id', orgId)
                 .single();
 
             if (!membership) {
@@ -51,19 +69,34 @@ router.post('/', authMiddleware, async (req, res) => {
             }
         }
 
+        const meetingPayload = {
+            title,
+            description: description || '',
+            created_by: userId,
+            organization_id: orgId,
+            processed: false,
+            type: req.body.type || 'standard'
+        };
+        if (source) {
+            meetingPayload.source = source;
+        }
+
         // Create meeting in database
-        const { data: meeting, error: meetingError } = await supabase
+        let { data: meeting, error: meetingError } = await supabase
             .from('meetings')
-            .insert({
-                title,
-                description: description || '',
-                created_by: userId,
-                organization_id: organizationId || null,
-                processed: false,
-                type: req.body.type || 'standard'
-            })
+            .insert(meetingPayload)
             .select()
             .single();
+
+        // Retry without source if column is not migrated yet
+        if (meetingError && source && meetingError.message?.includes('source')) {
+            delete meetingPayload.source;
+            ({ data: meeting, error: meetingError } = await supabase
+                .from('meetings')
+                .insert(meetingPayload)
+                .select()
+                .single());
+        }
 
         if (meetingError) {
             return res.status(500).json({ error: meetingError.message });
@@ -352,6 +385,50 @@ router.post('/:id/upload', authMiddleware, upload.array('audioFiles', 10), async
     } catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({ error: error.message || 'Failed to upload files' });
+    }
+});
+
+/**
+ * POST /api/meetings/:id/upload/extension
+ * Upload a single audio file from the Chrome extension (field: audio)
+ */
+router.post('/:id/upload/extension', authMiddleware, extensionUpload.single('audio'), async (req, res) => {
+    try {
+        const { id: meetingId } = req.params;
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ error: 'No audio file provided' });
+        }
+
+        const { data: meeting, error: meetingError } = await supabase
+            .from('meetings')
+            .select('id, type')
+            .eq('id', meetingId)
+            .single();
+
+        if (meetingError) {
+            return res.status(404).json({ error: 'Meeting not found' });
+        }
+
+        if (meeting.type !== 'group') {
+            return res.status(400).json({ error: 'Extension uploads require a group-type meeting' });
+        }
+
+        const fileUrl = await uploadAudioFile(file, meetingId, 'extension_audio');
+
+        await supabase
+            .from('meetings')
+            .update({ audio_file_url: fileUrl })
+            .eq('id', meetingId);
+
+        res.json({
+            message: 'Extension audio uploaded successfully',
+            fileUrl
+        });
+    } catch (error) {
+        console.error('Extension upload error:', error);
+        res.status(500).json({ error: error.message || 'Failed to upload file' });
     }
 });
 

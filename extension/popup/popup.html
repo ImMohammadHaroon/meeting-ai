@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="popup.css" />
+  <title>Meeting AI</title>
+</head>
+<body>
+  <header>
+    <h1>Meeting AI</h1>
+    <p class="subtitle">Google Meet recorder</p>
+  </header>
+
+  <section id="signed-out">
+    <form id="signin-form">
+      <label>
+        Email
+        <input type="email" id="email" required autocomplete="username" />
+      </label>
+      <label>
+        Password
+        <input type="password" id="password" required autocomplete="current-password" />
+      </label>
+      <button type="submit" id="signin-btn">Sign in</button>
+    </form>
+    <p id="error" class="error" hidden></p>
+  </section>
+
+  <section id="signed-in" hidden>
+    <p class="user-line">Signed in as <strong id="user-email"></strong></p>
+    <p class="hint">Open <a href="https://meet.google.com" target="_blank" rel="noopener">Google Meet</a> and click <strong>Record with Meeting AI</strong>.</p>
+    <button type="button" id="signout-btn" class="secondary">Sign out</button>
+  </section>
+
+  <details class="settings">
+    <summary>Settings</summary>
+    <label>
+      API URL
+      <input type="url" id="api-base" placeholder="http://localhost:5000/api" />
+    </label>
+    <label>
+      App URL (dashboard links)
+      <input type="url" id="app-url" placeholder="http://localhost:5173" />
+    </label>
+    <button type="button" id="save-settings" class="secondary">Save</button>
+  </details>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -232,14 +232,22 @@ const Dashboard = () => {
                                     <h3 className="text-lg md:text-xl font-semibold group-hover:text-white/90 line-clamp-2">
                                         {meeting.title}
                                     </h3>
-                                    <span
-                                        className={`px-2 py-1 text-xs rounded-full flex-shrink-0 ${meeting.processed
-                                            ? 'bg-green-500/20 text-green-300'
-                                            : 'bg-yellow-500/20 text-yellow-300'
-                                            }`}
-                                    >
-                                        {meeting.processed ? 'Processed' : 'Pending'}
-                                    </span>
+                                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                        {(meeting.source === 'chrome_extension' ||
+                                            meeting.description?.includes('Chrome extension')) && (
+                                            <span className="px-2 py-0.5 text-xs rounded-full bg-indigo-500/20 text-indigo-300">
+                                                Google Meet
+                                            </span>
+                                        )}
+                                        <span
+                                            className={`px-2 py-1 text-xs rounded-full ${meeting.processed
+                                                ? 'bg-green-500/20 text-green-300'
+                                                : 'bg-yellow-500/20 text-yellow-300'
+                                                }`}
+                                        >
+                                            {meeting.processed ? 'Processed' : 'Pending'}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 {meeting.description && (

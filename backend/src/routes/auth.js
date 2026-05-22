@@ -66,7 +66,8 @@ router.post('/signin', async (req, res) => {
         res.json({
             message: 'Signed in successfully',
             user: data.user,
-            session: data.session
+            session: data.session,
+            token: data.session?.access_token
         });
     } catch (error) {
         console.error('Signin error:', error);

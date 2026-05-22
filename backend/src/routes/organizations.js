@@ -492,6 +492,88 @@ router.delete('/members/:userId', authMiddleware, async (req, res) => {
     }
 });
 
+const GOOGLE_MEET_ORG_NAME = 'Google Meet';
+
+/**
+ * GET /api/organizations/google-meet
+ * Get or create the "Google Meet" organization for Chrome extension recordings
+ */
+router.get('/google-meet', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userEmail = req.user.email;
+
+        const { data: memberships, error: memberError } = await supabase
+            .from('organization_members')
+            .select(`
+                organizations (
+                    id,
+                    name,
+                    slug,
+                    domain,
+                    invite_code,
+                    created_at
+                )
+            `)
+            .eq('user_id', userId);
+
+        if (memberError) {
+            return res.status(500).json({ error: 'Failed to fetch organizations' });
+        }
+
+        const existing = (memberships || []).find((m) => {
+            const org = Array.isArray(m.organizations) ? m.organizations[0] : m.organizations;
+            return org?.name === GOOGLE_MEET_ORG_NAME;
+        });
+
+        if (existing) {
+            const org = Array.isArray(existing.organizations)
+                ? existing.organizations[0]
+                : existing.organizations;
+            return res.json({ organization: org });
+        }
+
+        const slug = await generateSlug(GOOGLE_MEET_ORG_NAME);
+        const domain = extractDomain(userEmail);
+        const inviteCode = generateInviteCode();
+
+        const { data: org, error: orgError } = await supabase
+            .from('organizations')
+            .insert({
+                name: GOOGLE_MEET_ORG_NAME,
+                slug,
+                domain,
+                invite_code: inviteCode,
+                created_by: userId
+            })
+            .select()
+            .single();
+
+        if (orgError) {
+            console.error('Create Google Meet org error:', orgError);
+            return res.status(500).json({ error: 'Failed to create Google Meet organization' });
+        }
+
+        const { error: memberInsertError } = await supabase
+            .from('organization_members')
+            .insert({
+                organization_id: org.id,
+                user_id: userId,
+                role: 'admin'
+            });
+
+        if (memberInsertError) {
+            await supabase.from('organizations').delete().eq('id', org.id);
+            return res.status(500).json({ error: 'Failed to add you to Google Meet organization' });
+        }
+
+        res.status(201).json({ organization: org });
+    } catch (error) {
+        console.error('Google Meet org error:', error);
+        res.status(500).json({ error: 'Failed to get Google Meet organization' });
+    }
+});
+
 /**
  * GET /api/organizations/all
  * Get ALL organizations user belongs to (multi-org support)

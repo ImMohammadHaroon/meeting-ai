@@ -36,6 +36,11 @@ const allowedOrigins = [
 const isOriginAllowed = (origin) => {
     if (!origin) return true;
 
+    // Chrome extension origins (Manifest V3)
+    if (origin.startsWith('chrome-extension://')) {
+        return true;
+    }
+
     // Normalize origin (remove trailing slashes, convert to lowercase)
     const normalizedOrigin = origin.replace(/\/$/, '').toLowerCase();
 

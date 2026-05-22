@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Meeting AI for Google Meet",
+  "version": "1.0.0",
+  "description": "Record Google Meet calls and send them to Meeting AI for transcription and notes.",
+  "permissions": [
+    "storage",
+    "tabCapture",
+    "offscreen",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://meet.google.com/*",
+    "http://localhost:5000/*",
+    "https://meeting-ai-3kyx.onrender.com/*",
+    "https://meetingai.dev/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Meeting AI"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content/meet.js"],
+      "css": ["content/meet.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/meet.css"],
+      "matches": ["https://meet.google.com/*"]
+    }
+  ]
+}
