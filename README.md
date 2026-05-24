@@ -99,6 +99,10 @@ npm run dev
 
 The application will be accessible at `http://localhost:5173`.
 
+## Mobile app (Flutter)
+
+A Flutter iOS/Android client lives in [`meeting_ai/`](meeting_ai/). See [`meeting_ai/README.md`](meeting_ai/README.md) for setup, backend URL configuration, and build instructions.
+
 ## 📄 License
 
 This project is released under the **MIT License**.

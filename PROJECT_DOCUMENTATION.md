@@ -1,6 +1,6 @@
 # Meeting AI — Complete Project Documentation
 
-> A full-stack, AI-powered meeting management platform that transforms raw audio into transcripts, structured notes, action items, and an interactive Q&A assistant. Available on **web**, **mobile (Expo)**, and **Chrome extension (Google Meet)**.
+> A full-stack, AI-powered meeting management platform that transforms raw audio into transcripts, structured notes, action items, and an interactive Q&A assistant. Available on **web** and **Chrome extension (Google Meet)**.
 
 ---
 
@@ -19,12 +19,11 @@
 11. [Database Schema](#11-database-schema)
 12. [AI Services (Groq)](#12-ai-services-groq)
 13. [Web Frontend](#13-web-frontend)
-14. [Mobile App (Expo)](#14-mobile-app-expo)
-15. [Chrome Extension](#15-chrome-extension)
-16. [Environment Variables](#16-environment-variables)
-17. [Development Setup](#17-development-setup)
-18. [Deployment](#18-deployment)
-19. [Known Limitations & Troubleshooting](#19-known-limitations--troubleshooting)
+14. [Chrome Extension](#14-chrome-extension)
+15. [Environment Variables](#15-environment-variables)
+16. [Development Setup](#16-development-setup)
+17. [Deployment](#17-deployment)
+18. [Known Limitations & Troubleshooting](#18-known-limitations--troubleshooting)
 
 ---
 
@@ -37,7 +36,6 @@
 | Live demo | https://meetingai.dev |
 | Web app | `frontend/` |
 | API server | `backend/` |
-| Mobile app | `meeting-ai-mobile/` |
 | Chrome extension | `extension/` |
 | Extension docs | [extension/EXTENSION_DOCUMENTATION.md](extension/EXTENSION_DOCUMENTATION.md) |
 
@@ -61,7 +59,6 @@
 meeting-ai/
 ├── backend/                 # Express 5 + Socket.io API
 ├── frontend/                # React 19 + Vite web client
-├── meeting-ai-mobile/       # React Native + Expo SDK 51
 ├── extension/               # Chrome MV3 (Google Meet)
 ├── README.md
 └── PROJECT_DOCUMENTATION.md # This file
@@ -79,7 +76,7 @@ All clients share one backend and one Supabase project.
 - JWT in `Authorization: Bearer <token>` on API calls
 - `GET /api/auth/me` for session validation
 - User metadata: `full_name` (used in task assignment and community chat display)
-- Protected routes on web (`ProtectedRoute`) and mobile (`AuthContext`)
+- Protected routes on web via `ProtectedRoute`
 
 ### 3.2 Organization Management
 
@@ -125,7 +122,6 @@ Additional fields:
 ### 3.7 Audio
 
 - Web: RecordRTC + browser `getUserMedia`
-- Mobile: `expo-av` via `useAudioRecorder`
 - Extension: tab capture via offscreen document + `MediaRecorder` (WebM)
 - Limits: **25MB** standard upload, **100MB** live/extension
 
@@ -137,7 +133,7 @@ Additional fields:
 
 ```mermaid
 sequenceDiagram
-    participant Client as Web / Mobile / Extension
+    participant Client as Web / Extension
     participant API as Express API
     participant Storage as Supabase Storage
     participant DB as PostgreSQL
@@ -220,19 +216,6 @@ Meeting is still marked `processed: true` with `notes` containing error text —
 | @shiguredo/rnnoise-wasm | ^2025.1.5 | Audio enhancement (live) |
 | @daily-co/daily-js | ^0.90.0 | Present in deps (optional integrations) |
 
-### Mobile (`meeting-ai-mobile/package.json`)
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| expo | ~51.0.0 | Runtime |
-| react-native | 0.74.0 | Mobile UI |
-| @react-navigation/* | ^6.x | Stack + tabs |
-| nativewind | ^4.0.0 | Tailwind-style classes |
-| expo-av | ~14.0.0 | Audio record/playback |
-| socket.io-client | ^4.7.0 | Live signaling |
-| @supabase/supabase-js | ^2.39.0 | Auth |
-| axios | ^1.6.0 | API |
-
 ### Chrome extension
 
 - Manifest V3: service worker, offscreen document, content script on `meet.google.com`
@@ -247,13 +230,13 @@ Meeting is still marked `processed: true` with `notes` containing error text —
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  CLIENTS                                                                  │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
-│  │ frontend/   │  │ meeting-ai- │  │ extension/  │  │ (Postman, etc.) │ │
-│  │ React+Vite  │  │ mobile Expo │  │ Chrome MV3  │  │                 │ │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘ │
-└─────────┼────────────────┼────────────────┼──────────────────┼──────────┘
-          │ HTTP + WS      │ HTTP + WS      │ HTTP (chrome-ext CORS)
-          ▼                ▼                ▼
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐                   │
+│  │ frontend/   │  │ extension/  │  │ (Postman, etc.) │                   │
+│  │ React+Vite  │  │ Chrome MV3  │  │                 │                   │
+│  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘                   │
+└─────────┼────────────────┼──────────────────┼────────────────────────────┘
+          │ HTTP + WS      │ HTTP (chrome-ext CORS)
+          ▼                ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  backend/ — Express 5 + HTTP Server + Socket.io                           │
 │  Routes: auth, users, meetings, chat, community-chat, live-meetings, orgs │
@@ -284,7 +267,7 @@ Frontend auto-detects Render backend when hostname contains `meetingai.dev` or `
 ### CORS
 
 - Allows listed origins, `chrome-extension://`, subdomains of `meetingai.dev`, and `vercel.app`
-- Requests with **no Origin** allowed (mobile apps, Postman)
+- Requests with **no Origin** allowed (Postman, curl, extension background requests)
 - Diagnostic: `GET /api/cors-check`
 
 ---
@@ -351,33 +334,6 @@ frontend/src/
 └── App.jsx, main.jsx
 ```
 
-### Mobile
-
-```
-meeting-ai-mobile/
-├── App.jsx
-├── src/
-│   ├── screens/
-│   │   ├── auth/          SignIn, SignUp
-│   │   ├── dashboard/     Dashboard
-│   │   ├── meetings/      Create*, MeetingDetail
-│   │   ├── live/          LiveMeeting
-│   │   ├── organizations/ Organization
-│   │   └── profile/       Profile
-│   ├── components/
-│   │   ├── common/        Button, Card, Input, Toast, ...
-│   │   ├── meetings/      AudioRecorder, Transcript, Notes, Tasks, ...
-│   │   ├── organizations/ OrgCard, MembersList
-│   │   └── chat/          ChatInterface
-│   ├── navigation/        App, Auth, Main, Meeting navigators
-│   ├── contexts/          AuthContext, OrganizationContext
-│   ├── hooks/             useAuth, useOrganization, useAudioRecorder
-│   ├── services/          api.js, supabase.js, socket.js
-│   └── constants/         api.js, colors.js
-├── .env.example
-└── package.json
-```
-
 ### Extension
 
 ```
@@ -400,7 +356,7 @@ extension/
 
 1. Client calls `POST /api/auth/signup` or `signin` with email/password
 2. Backend uses Supabase Auth; returns session + JWT
-3. Client stores token (localStorage web, AsyncStorage mobile)
+3. Client stores token in `localStorage` (web)
 4. All protected routes: `Authorization: Bearer <access_token>`
 5. `authMiddleware` calls `supabase.auth.getUser(token)` and sets `req.user`
 
@@ -420,7 +376,7 @@ Backend uses **service role** key — never expose it to clients. Clients use **
 
 ## 9. API Reference
 
-Base URL: `http://localhost:5000/api` (or `VITE_API_URL` / `EXPO_PUBLIC_API_URL`)
+Base URL: `http://localhost:5000/api` (or `VITE_API_URL` in production)
 
 ### Authentication — `/api/auth`
 
@@ -529,8 +485,7 @@ Connect to same host as API (no `/api` path), e.g. `http://localhost:5000`.
 | `user-left` | Peer disconnected |
 
 Implementation: `backend/src/sockets/signalingHandler.js`  
-Web client hook: `frontend/src/hooks/useWebRTC.js`  
-Mobile: `meeting-ai-mobile/src/services/socket.js`
+Web client hook: `frontend/src/hooks/useWebRTC.js`
 
 ---
 
@@ -712,61 +667,7 @@ VITE_SOCKET_URL=http://localhost:5000   # optional; auto-detect in prod
 
 ---
 
-## 14. Mobile App (Expo)
-
-React Native client with feature parity to core web flows.
-
-### Setup
-
-```bash
-cd meeting-ai-mobile
-npm install
-cp .env.example .env
-# Set EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY, EXPO_PUBLIC_API_URL
-npx expo start
-```
-
-### Environment
-
-```env
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-EXPO_PUBLIC_API_URL=https://your_backend_host/api
-```
-
-`SOCKET_URL` is derived by stripping `/api` from API URL (`src/constants/api.js`).
-
-### Navigation
-
-- **Unauthenticated**: `AuthNavigator` → SignIn, SignUp
-- **Authenticated**: `MainNavigator` (bottom tabs)
-  - **Dashboard** stack: home, meeting detail, create meeting/group/live, live room (modal)
-  - **Meetings** stack: `MeetingNavigator`
-  - **Organizations**: org screen
-  - **Profile**: user profile
-
-### Contexts & services
-
-| Module | Purpose |
-|--------|---------|
-| AuthContext | Session, token in AsyncStorage |
-| OrganizationContext | Multi-org state |
-| api.js | Axios + interceptors |
-| socket.js | Socket.io for live meetings |
-| useAudioRecorder | expo-av recording |
-
-### Build (EAS)
-
-```bash
-npm run build:android
-npm run build:ios
-```
-
-Requires Expo EAS configuration.
-
----
-
-## 15. Chrome Extension
+## 14. Chrome Extension
 
 | Item | Detail |
 |------|--------|
@@ -781,7 +682,7 @@ Requires Expo EAS configuration.
 
 ---
 
-## 16. Environment Variables
+## 15. Environment Variables
 
 ### Backend (`backend/.env`)
 
@@ -809,17 +710,9 @@ VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
 ```
 
-### Mobile (`meeting-ai-mobile/.env`)
-
-```env
-EXPO_PUBLIC_SUPABASE_URL=
-EXPO_PUBLIC_SUPABASE_ANON_KEY=
-EXPO_PUBLIC_API_URL=http://localhost:5000/api
-```
-
 ---
 
-## 17. Development Setup
+## 16. Development Setup
 
 ### Prerequisites
 
@@ -828,12 +721,11 @@ EXPO_PUBLIC_API_URL=http://localhost:5000/api
 - Groq API key
 - For live meetings locally: backend must run with Socket.io (not serverless)
 
-### Install all packages
+### Install packages
 
 ```bash
 cd backend && npm install
 cd ../frontend && npm install
-cd ../meeting-ai-mobile && npm install
 ```
 
 ### Run locally
@@ -844,9 +736,6 @@ cd backend && npm run dev
 
 # Terminal 2 — Web
 cd frontend && npm run dev
-
-# Terminal 3 — Mobile (optional)
-cd meeting-ai-mobile && npx expo start
 ```
 
 - Web: http://localhost:5173  
@@ -863,14 +752,13 @@ cd meeting-ai-mobile && npx expo start
 
 ---
 
-## 18. Deployment
+## 17. Deployment
 
 | Component | Recommended | Notes |
 |-----------|-------------|-------|
 | Frontend | Vercel / Netlify | `npm run build` → `dist/` |
 | Backend | **Render**, Railway, VPS | **Required** for Socket.io / live meetings |
 | Database | Supabase hosted | Auth + Postgres + Storage |
-| Mobile | Expo EAS | Store builds |
 | Extension | Chrome Web Store | Zip `extension/` or developer load |
 
 **Do not** deploy the Express+Socket.io server to Vercel serverless for live meeting features — WebSockets need a persistent process.
@@ -892,7 +780,7 @@ npm run preview
 
 ---
 
-## 19. Known Limitations & Troubleshooting
+## 18. Known Limitations & Troubleshooting
 
 | Issue | Cause | Mitigation |
 |-------|-------|------------|
@@ -908,10 +796,10 @@ npm run preview
 
 MP3, WAV, M4A, OGG, WebM (live/extension often WebM)
 
-### Browser / device support
+### Browser support
 
 - Web live meetings: modern browser with `getUserMedia` + WebRTC  
-- Mobile: microphone permissions via `expo-av` / permissions helper  
+- Responsive layout: `MobileDrawer` and media queries for smaller viewports  
 
 ---
 
@@ -921,4 +809,4 @@ MIT License — see [README.md](README.md).
 
 ---
 
-*Last updated to reflect monorepo layout including `meeting-ai-mobile`, corrected table names (`chat_messages`, `community_messages`), community chat API, extension routes, and Groq pipeline details.*
+*Last updated: web + Chrome extension clients only (`backend/`, `frontend/`, `extension/`). Includes corrected table names (`chat_messages`, `community_messages`), community chat API, extension routes, and Groq pipeline details.*
