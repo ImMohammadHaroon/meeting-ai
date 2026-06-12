@@ -21,7 +21,7 @@ const faqs: FaqItem[] = [
   {
     question: "How does audio transcription work?",
     answer:
-      "Upload your audio file (MP3, WAV, M4A, OGG), and our system uses Groq Whisper API to transcribe it with high accuracy. The transcript is then used to generate notes and extract tasks automatically.",
+      "Upload your audio file (MP3, WAV, M4A, OGG), and our system uses OpenAI Whisper to transcribe it with high accuracy. The transcript is then used to generate notes and extract tasks automatically.",
     meta: "Audio",
   },
   {

@@ -1,10 +1,10 @@
 import supabase from '../config/supabase.js';
 import { downloadAudioFile } from './storageService.js';
-import { transcribeAudio, generateNotes, extractTasks } from './groqService.js';
+import { transcribeAudio, generateNotes, extractTasks } from './aiService.js';
 
 /**
  * Process live meeting after it ends
- * Transcribes audio, generates notes, extracts tasks using Groq
+ * Transcribes audio, generates notes, extracts tasks using OpenAI
  * @param {Object} liveMeeting - Live meeting object with recording_url
  */
 export const processLiveMeetingAsync = async (liveMeeting) => {
@@ -22,12 +22,12 @@ export const processLiveMeetingAsync = async (liveMeeting) => {
         console.log('Downloading recording...');
         const audioBuffer = await downloadAudioFile(liveMeeting.recording_url);
 
-        // Transcribe audio using Groq Whisper
-        console.log('Transcribing audio with Groq Whisper...');
+        // Transcribe audio using OpenAI Whisper
+        console.log('Transcribing audio with OpenAI Whisper...');
         const transcript = await transcribeAudio(audioBuffer, 'live-meeting.webm');
 
-        // Generate notes using Groq
-        console.log('Generating meeting notes with Groq...');
+        // Generate notes using OpenAI
+        console.log('Generating meeting notes with OpenAI...');
         const notes = await generateNotes(transcript, meeting.title);
 
         // Get participants for task extraction
@@ -45,8 +45,8 @@ export const processLiveMeetingAsync = async (liveMeeting) => {
             };
         });
 
-        // Extract tasks using Groq
-        console.log('Extracting tasks with Groq...');
+        // Extract tasks using OpenAI
+        console.log('Extracting tasks with OpenAI...');
         const extractedTasks = await extractTasks(transcript, participantDetails);
 
         // Save tasks to database
@@ -70,7 +70,7 @@ export const processLiveMeetingAsync = async (liveMeeting) => {
             })
             .eq('id', meetingId);
 
-        console.log(`Live meeting ${liveMeeting.id} processed successfully with Groq`);
+        console.log(`Live meeting ${liveMeeting.id} processed successfully with OpenAI`);
     } catch (error) {
         console.error('Live meeting processing error:', error);
 

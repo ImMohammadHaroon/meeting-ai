@@ -27,7 +27,7 @@ Meeting AI is a full-stack, production-grade web application that automates the 
 
 - **Conduct live meetings** using WebRTC peer-to-peer audio/video conferencing
 - **Record meetings** with high-fidelity audio capture
-- **Transcribe audio** using Groq's Whisper API with automatic language translation to English
+- **Transcribe audio** using OpenAI Whisper (`whisper-1`) with automatic language translation to English
 - **Generate intelligent meeting notes** with structured summaries, key points, decisions, and action items
 - **Extract and assign tasks** automatically from meeting transcripts to the correct participants
 - **Query meetings contextually** using an integrated AI chatbot that understands the full meeting context
@@ -89,7 +89,7 @@ Meeting AI eliminates these problems by automating transcription, summarization,
 - **React + Vite**: Provides fast hot module replacement during development and optimized production builds for sub-second page loads
 - **Tailwind CSS**: Enables rapid UI iteration with a consistent design system; reduces CSS overhead through tree-shaking
 - **Socket.io**: Reliable WebSocket fallback for real-time peer discovery and ICE candidate exchange in WebRTC
-- **Groq Integration**: Leverages specialized LPU™ hardware for 10-100x faster LLM inference compared to GPU-based alternatives
+- **OpenAI Integration**: Unified API for Whisper transcription and GPT-4o mini chat completions (notes, tasks, Q&A)
 - **Supabase**: Provides integrated authentication, database, and storage without managing separate infrastructure
 
 ### Backend
@@ -100,17 +100,17 @@ Meeting AI eliminates these problems by automating transcription, summarization,
 | **Express** | 5.2.1 | Lightweight, unopinionated web framework |
 | **Socket.io** | 4.8.3 | Real-time WebRTC signaling and event broadcasting |
 | **Multer** | 2.0.2 | Middleware for handling file uploads (audio files) |
-| **Groq SDK** | 0.37.0 | Official SDK for Groq API (transcription, summarization, LLM inference) |
+| **OpenAI SDK** | 4.104.0 | Official SDK for OpenAI API (Whisper transcription, GPT-4o mini chat completions) |
 | **Supabase JS** | 2.89.0 | Admin SDK for database operations and storage management |
 | **Nodemailer** | 7.0.13 | Email service for sending invitations and notifications |
 | **CORS** | 2.8.5 | Enable cross-origin requests from frontend and extension |
 | **dotenv** | 17.2.3 | Environment variable management |
 | **Nanoid** | 5.1.6 | Generate cryptographically secure, URL-friendly unique IDs |
-| **Form-data** | 4.0.5 | Construct multipart form data for Groq API uploads |
+| **Form-data** | 4.0.5 | Construct multipart form data for file uploads |
 
 **Why These Choices:**
 - **Express**: Minimal overhead allows for high-performance request handling; large ecosystem of middleware
-- **Groq SDK**: Direct, low-latency access to Whisper and LLaMA models; critical for the "AI speed" competitive advantage
+- **OpenAI SDK**: Direct access to Whisper and GPT-4o mini for transcription, summarization, task extraction, and chat
 - **Supabase**: Removes database administration burden; built-in Row Level Security enforces data privacy at the database layer
 - **Nodemailer**: Flexible email integration with support for SMTP and Gmail app passwords
 
@@ -135,7 +135,7 @@ Meeting AI eliminates these problems by automating transcription, summarization,
 | Service | Purpose |
 |---------|---------|
 | **Supabase** | Managed PostgreSQL database, real-time subscriptions, authentication, file storage |
-| **Groq Cloud** | LLM inference for transcription (Whisper), summarization, and task extraction (LLaMA 3.3) |
+| **OpenAI API** | LLM inference for transcription (`whisper-1`), summarization, task extraction, and chat (`gpt-4o-mini`) |
 | **Vercel** | Frontend deployment with edge functions and automatic CI/CD |
 | **Render** | Backend deployment with native WebSocket support for Socket.io |
 | **PostgreSQL (Supabase)** | Relational database with Row Level Security for multi-tenant data isolation |
@@ -175,7 +175,7 @@ Meeting AI eliminates these problems by automating transcription, summarization,
 │  │ /org/:id/members  │  │ /process          │  └────────────────┘  │
 │  └───────────────────┘  └───────────────────┘                       │
 │                                                                       │
-│  Socket.io Signaling Handler | Auth Middleware | Groq Services      │
+│  Socket.io Signaling Handler | Auth Middleware | AI Services (OpenAI) │
 └──────────────────┬──────────────────────────────────────────────────┘
                    │
          ┌─────────┼─────────┬──────────────┐
@@ -183,9 +183,9 @@ Meeting AI eliminates these problems by automating transcription, summarization,
     HTTPS│    WebSocket  File Upload    gRPC/HTTP
          │         │         │              │
 ┌────────▼─┐   ┌──▼──┐  ┌───▼──────┐  ┌────▼──────┐
-│ Supabase │   │I/O  │  │ Storage  │  │ Groq API  │
-│  Auth +  │   │Bind │  │Bucket    │  │  Cloud    │
-│ Database │   │    │  │(S3-like) │  │  (LLMs)   │
+│ Supabase │   │I/O  │  │ Storage  │  │ OpenAI API│
+│  Auth +  │   │Bind │  │Bucket    │  │ (Whisper +│
+│ Database │   │    │  │(S3-like) │  │ GPT-4o)   │
 └──────────┘   └─────┘  └──────────┘  └───────────┘
 ```
 
@@ -212,11 +212,11 @@ POST /api/meetings/:id/process (Trigger processing)
        ↓
 [Backend] Queue async processing job
        ↓
-Download audio file → Groq Whisper API → English transcript
+Download audio file → OpenAI Whisper API (`whisper-1`) → English transcript
        ↓
-Transcript → Groq LLaMA 3.3 → Professional meeting notes
+Transcript → GPT-4o mini → Professional meeting notes
        ↓
-Transcript + Participants → Groq LLaMA 3.3 → Extracted tasks
+Transcript + Participants → GPT-4o mini → Extracted tasks
        ↓
 Update [Database] Meetings record with transcript, notes, processed=true
 Insert [Database] Tasks for each extracted action item
@@ -281,7 +281,7 @@ chatWithContext() builds prompt:
   - Meeting transcript, notes, tasks as context
   - Previous chat history for conversational flow
        ↓
-Prompt + context → Groq LLaMA 3.3 via chat completions API
+Prompt + context → GPT-4o mini via OpenAI chat completions API
        ↓
 LLM generates contextual response
        ↓
@@ -331,7 +331,7 @@ meeting-ai/
 │   │   ├── server.js                    # Main Express app, HTTP/Socket.io server setup, CORS config
 │   │   │
 │   │   ├── config/
-│   │   │   ├── groq.js                  # Groq SDK initialization with API key
+│   │   │   ├── openai.js                # OpenAI SDK initialization with API key
 │   │   │   └── supabase.js              # Supabase admin client (service role key)
 │   │   │
 │   │   ├── middleware/
@@ -347,7 +347,7 @@ meeting-ai/
 │   │   │   └── chat_community.js        # Community discussion messages for meetings
 │   │   │
 │   │   ├── services/
-│   │   │   ├── groqService.js           # Whisper transcription, LLaMA summarization, task extraction
+│   │   │   ├── aiService.js             # Whisper transcription, GPT-4o mini summarization, task extraction, chat
 │   │   │   ├── storageService.js        # Supabase Storage upload/download with file sanitization
 │   │   │   ├── email.js                 # Nodemailer SMTP setup, org invite emails
 │   │   │   └── processLiveMeeting.js    # Async post-processing for live meeting recordings
@@ -357,7 +357,7 @@ meeting-ai/
 │   │   │
 │   │   └── temp/                        # Temporary directory for uploaded files before processing
 │   │
-│   ├── package.json                     # Dependencies: express, groq-sdk, supabase, socket.io
+│   ├── package.json                     # Dependencies: express, openai, supabase, socket.io
 │   ├── nodemon.json                     # Auto-restart on file changes during development
 │   ├── vercel.json                      # Serverless deployment config (if used)
 │   └── README.md
@@ -559,7 +559,7 @@ User invites colleague:
 - Users upload pre-recorded audio files (MP3, WAV, M4A, OGG, WebM)
 - Select participants who were in the meeting
 - Backend processes asynchronously:
-  - Transcribes audio to English using Groq Whisper API
+  - Transcribes audio to English using OpenAI Whisper API (`whisper-1`)
   - Generates professional meeting notes
   - Extracts and assigns tasks to participants
 - User views results on Meeting Detail page
@@ -577,13 +577,13 @@ Backend processing:
   3. Upload to Supabase Storage: meetings/{meetingId}/{participantId}_{timestamp}_{filename}
   4. Trigger: POST /api/meetings/:id/process
   
-Groq Transcription:
+OpenAI Transcription:
   1. Download audio file from storage → Buffer
-  2. groq.audio.translations.create()
-     - model: "whisper-large-v3"
+  2. openai.audio.translations.create()
+     - model: "whisper-1"
      - Automatically handles Urdu, English mix, and any language
      - Returns JSON with text field
-  3. correctSentences() uses LLaMA to fix grammar/clarity
+  3. correctSentences() uses GPT-4o mini to fix grammar/clarity
      - Preserves original meaning and content
      - Returns polished transcript
   
@@ -595,7 +595,7 @@ Note Generation:
         4. Action Items
         5. Next Steps
      """
-  2. groq.chat.completions.create(llama-3.3-70b-versatile)
+  2. openai.chat.completions.create({ model: "gpt-4o-mini" })
   3. Returns formatted notes
   
 Task Extraction:
@@ -613,7 +613,7 @@ Final:
 ```
 
 **Files Involved:**
-- Backend: [src/routes/meetings.js](backend/src/routes/meetings.js), [src/services/groqService.js](backend/src/services/groqService.js), [src/services/storageService.js](backend/src/services/storageService.js)
+- Backend: [src/routes/meetings.js](backend/src/routes/meetings.js), [src/services/aiService.js](backend/src/services/aiService.js), [src/services/storageService.js](backend/src/services/storageService.js)
 - Frontend: [pages/CreateMeeting.jsx](frontend/src/pages/CreateMeeting.jsx), [pages/MeetingDetail.jsx](frontend/src/pages/MeetingDetail.jsx)
 
 **User Experience:**
@@ -784,14 +784,14 @@ Content Script UI:
 **What It Does:**
 - Transform raw transcripts into structured, professional meeting notes
 - Automatically identify: summary, key points, decisions, action items, next steps
-- Uses Groq LLaMA 3.3 for context understanding
+- Uses GPT-4o mini for context understanding
 
 **How It Works Internally:**
 ```
 Input: Raw transcript (potentially with grammar issues)
 Output: Structured markdown notes
 
-Prompt to LLaMA:
+Prompt to GPT-4o mini:
   "Generate comprehensive meeting notes with sections:
    1. Summary (2-3 sentences)
    2. Key Discussion Points (bullet list)
@@ -801,13 +801,13 @@ Prompt to LLaMA:
 
 Temperature: 0.3 (relatively deterministic)
 Max tokens: 2000
-Model: llama-3.3-70b-versatile
+Model: gpt-4o-mini
 
 Response is parsed as markdown and stored in meetings.notes column
 ```
 
 **Files Involved:**
-- Backend: [src/services/groqService.js](backend/src/services/groqService.js) - `generateNotes()` function
+- Backend: [src/services/aiService.js](backend/src/services/aiService.js) - `generateNotes()` function
 
 **User Experience:**
 1. Meeting processed
@@ -831,7 +831,7 @@ Response is parsed as markdown and stored in meetings.notes column
 Input: Transcript + list of participants with IDs
 Output: Task array [{title, assigneeId}, ...]
 
-Prompt to LLaMA:
+Prompt to GPT-4o mini:
   "Extract all action items from transcript.
    For each task:
    1. Describe the task
@@ -846,7 +846,7 @@ Prompt to LLaMA:
 
 Temperature: 0.2 (deterministic)
 Max tokens: 1500
-Model: llama-3.3-70b-versatile
+Model: gpt-4o-mini
 
 Response parsed as JSON
 Insert into tasks table:
@@ -858,7 +858,7 @@ Insert into tasks table:
 ```
 
 **Files Involved:**
-- Backend: [src/services/groqService.js](backend/src/services/groqService.js) - `extractTasks()` and `extractGroupTasks()`
+- Backend: [src/services/aiService.js](backend/src/services/aiService.js) - `extractTasks()` and `extractGroupTasks()`
 
 **User Experience:**
 1. Meeting processed
@@ -876,7 +876,7 @@ Insert into tasks table:
 - Ask questions about a specific meeting's content
 - Chatbot returns answers grounded in the meeting transcript, notes, and tasks
 - Maintains conversation history within a meeting
-- Uses Groq LLaMA for context-aware responses
+- Uses GPT-4o mini for context-aware responses
 
 **How It Works Internally:**
 ```
@@ -902,13 +902,13 @@ Context Building:
   User message: "What were the key decisions?"
 
 LLM Call:
-  groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+  openai.chat.completions.create({
+    model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: 'You are a meeting assistant...' },
       { role: 'user', content: full_prompt }
     ],
-    temperature: 0.7
+    temperature: 0.5
   })
 
 Response:
@@ -921,7 +921,7 @@ Return response to frontend
 ```
 
 **Files Involved:**
-- Backend: [src/routes/chat.js](backend/src/routes/chat.js), [src/services/groqService.js](backend/src/services/groqService.js) - `chatWithContext()`
+- Backend: [src/routes/chat.js](backend/src/routes/chat.js), [src/services/aiService.js](backend/src/services/aiService.js) - `chatWithContext()`
 - Frontend: [components/Chatbot.jsx](frontend/src/components/Chatbot.jsx), [pages/MeetingDetail.jsx](frontend/src/pages/MeetingDetail.jsx)
 
 **User Experience:**
@@ -2195,8 +2195,8 @@ NODE_ENV=development
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-# Groq API
-GROQ_API_KEY=gsk_your_api_key_here
+# OpenAI API
+OPENAI_API_KEY=sk-your_api_key_here
 
 # Frontend URL (for CORS)
 FRONTEND_URL=http://localhost:5173
@@ -2224,7 +2224,7 @@ GMAIL_SMTP_SECURE=false
 | `PORT` | Express server port | `5000` |
 | `SUPABASE_URL` | Supabase project URL | `https://abc123.supabase.co` |
 | `SUPABASE_SERVICE_KEY` | Admin API key (service role) | Full JWT token |
-| `GROQ_API_KEY` | Groq API key for LLM access | `gsk_...` |
+| `OPENAI_API_KEY` | OpenAI API key for Whisper and GPT-4o mini | `sk-...` |
 | `FRONTEND_URL` | Allowed origin for CORS | `http://localhost:5173` |
 | `SMTP_HOST` | Email server hostname | `smtp.gmail.com` |
 | `SMTP_USER` / `SMTP_PASS` | SMTP credentials | Gmail account + app password |
@@ -2281,7 +2281,7 @@ Or update via extension popup settings (persisted in `chrome.storage.sync`).
 - **Node.js** 16+ (check: `node --version`)
 - **npm** 7+ (check: `npm --version`)
 - **Supabase** account (free tier available)
-- **Groq API** key (free tier available)
+- **OpenAI API** key ([platform.openai.com](https://platform.openai.com))
 - **Git** for version control
 
 ### Step-by-Step Installation
@@ -2310,11 +2310,11 @@ cd meeting-ai
    - Go to SQL Editor
    - Execute the schema SQL (see [Database Models](#7-database--data-models) section)
 
-#### 3. Groq API Setup
+#### 3. OpenAI API Setup
 
-1. Sign up at [groq.com](https://groq.com)
-2. Create API key from dashboard
-3. Copy key for backend `.env`
+1. Sign up at [platform.openai.com](https://platform.openai.com)
+2. Create an API key from the dashboard
+3. Copy the key into `backend/.env` as `OPENAI_API_KEY`
 
 #### 4. Backend Setup
 
@@ -2330,7 +2330,7 @@ PORT=5000
 NODE_ENV=development
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-GROQ_API_KEY=gsk_...
+OPENAI_API_KEY=sk-...
 FRONTEND_URL=http://localhost:5173
 EOF
 
@@ -2445,7 +2445,7 @@ curl http://localhost:5000/api/auth/me
    NODE_ENV = production
    SUPABASE_URL = https://your-project.supabase.co
    SUPABASE_SERVICE_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   GROQ_API_KEY = gsk_...
+   OPENAI_API_KEY = sk-...
    FRONTEND_URL = https://meeting-ai-psi.vercel.app
    SMTP_HOST = smtp.gmail.com
    GMAIL_USER = your-email@gmail.com
@@ -2504,9 +2504,9 @@ curl http://localhost:5000/api/auth/me
    - Max 100MB for extension recordings (may be too large for slow connections)
    - No resumable uploads (single-shot only)
 
-6. **Groq API Rate Limits**
-   - Free tier: ~30 req/min (varies by endpoint)
-   - Production use requires paid tier for high volume
+6. **OpenAI API Rate Limits & Costs**
+   - Usage is billed per token (Whisper per minute, GPT-4o mini per token)
+   - Set usage limits in the OpenAI dashboard for production
    - No built-in rate limiting on backend (add middleware if needed)
 
 7. **Email Service Dependency**
@@ -2616,7 +2616,7 @@ curl http://localhost:5000/api/auth/me
 13. **Sentiment Analysis**
     - Detect sentiment of participants
     - Identify heated discussions or disagreements
-    - **Implementation**: Call Groq with sentiment classification prompt
+    - **Implementation**: Call OpenAI with sentiment classification prompt
 
 14. **Accessibility Features**
     - Closed captions during live meeting
@@ -2636,7 +2636,7 @@ curl http://localhost:5000/api/auth/me
 Meeting AI is a sophisticated, production-ready platform that intelligently automates meeting workflows. It combines cutting-edge technologies (WebRTC, LLMs, real-time signaling) to deliver a seamless, secure, and scalable solution for modern teams.
 
 The architecture is designed for **performance**, **security**, and **extensibility**:
-- **Performance**: Groq LPU hardware enables sub-second transcription; WebRTC provides p2p efficiency
+- **Performance**: OpenAI Whisper and GPT-4o mini power transcription and summarization; WebRTC provides p2p efficiency
 - **Security**: Supabase RLS enforces data privacy; JWT tokens ensure authentication
 - **Extensibility**: Modular services, clear API boundaries, and event-driven signaling allow easy addition of features
 
@@ -2645,6 +2645,6 @@ For questions, issues, or contributions, refer to the project GitHub repository 
 ---
 
 **Document Generated**: January 15, 2025  
-**Version**: 1.0.0  
-**Last Updated**: January 15, 2025
+**Version**: 1.1.0  
+**Last Updated**: June 11, 2026
 

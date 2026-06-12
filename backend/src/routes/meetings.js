@@ -3,7 +3,7 @@ import multer from 'multer';
 import supabase from '../config/supabase.js';
 import authMiddleware from '../middleware/auth.js';
 import { uploadAudioFile, downloadAudioFile } from '../services/storageService.js';
-import { transcribeAudio, generateNotes, extractTasks, extractGroupTasks } from '../services/groqService.js';
+import { transcribeAudio, generateNotes, extractTasks, extractGroupTasks } from '../services/aiService.js';
 
 const router = express.Router();
 

@@ -5,8 +5,8 @@ Recommended for a 40–50 page FYP report. Each entry includes full code, file p
 | # | ID | Feature | Source |
 |---|-----|---------|--------|
 | 1 | 9.2 | Async AI Processing Pipeline | Backend |
-| 2 | 7.1 | Groq Whisper Transcription | Backend |
-| 3 | 8.1 | AI Meeting Notes (LLaMA) | Backend |
+| 2 | 7.1 | OpenAI Whisper Transcription | Backend |
+| 3 | 8.1 | AI Meeting Notes (GPT-4o mini) | Backend |
 | 4 | 5.1 | WebRTC Peer Connection | Frontend |
 | 5 | 4.2 | Socket.io Room Join / Signaling | Backend |
 | 6 | 3.3 | End Meeting + Trigger AI | Backend |
@@ -106,7 +106,7 @@ async function processMetingAsync(meetingId, meeting, participants) {
 |-------|-------------|
 | **Purpose** | End-to-end async pipeline: download audio → STT → summary → tasks → database. |
 | **Input** | `meetingId`, meeting row (with `audio_file_url` or per-participant URLs), participants array. |
-| **Processing** | Whisper transcription; LLaMA notes; task extraction (standard or group); Supabase inserts/updates. |
+| **Processing** | Whisper transcription (`whisper-1`); GPT-4o mini notes; task extraction (standard or group); Supabase inserts/updates. |
 | **Output** | `meetings.transcript`, `meetings.notes`, `processed: true`, rows in `tasks`. |
 | **Importance** | Unifies all AI steps for standard, group, and Chrome extension meetings. |
 
@@ -114,12 +114,14 @@ async function processMetingAsync(meetingId, meeting, participants) {
 
 ---
 
-## Code Snippet 2 — 7.1: Groq Whisper Transcription
+## Code Snippet 2 — 7.1: OpenAI Whisper Transcription
 
 **Source:** Backend  
-**File:** `backend/src/services/groqService.js`
+**File:** `backend/src/services/aiService.js`
 
 ```javascript
+const TRANSCRIPTION_MODEL = 'whisper-1';
+
 export const transcribeAudio = async (audioBuffer, fileName) => {
     try {
         const tempDir = path.join(process.cwd(), 'temp');
@@ -133,9 +135,9 @@ export const transcribeAudio = async (audioBuffer, fileName) => {
         const file = fs.createReadStream(tempFilePath);
 
         // Whisper translation: non-English audio → English
-        const translation = await groq.audio.translations.create({
-            file: file,
-            model: 'whisper-large-v3',
+        const translation = await openai.audio.translations.create({
+            file,
+            model: TRANSCRIPTION_MODEL,
             response_format: 'json',
             temperature: 0.0
         });
@@ -155,9 +157,9 @@ export const transcribeAudio = async (audioBuffer, fileName) => {
 
 | Field | Description |
 |-------|-------------|
-| **Purpose** | Converts meeting audio to English text using Groq Whisper API. |
-| **Input** | Audio `Buffer` and temporary filename. |
-| **Processing** | Writes temp file; `groq.audio.translations.create` with `whisper-large-v3`; LLaMA grammar correction. |
+| **Purpose** | Converts meeting audio to English text using OpenAI Whisper API. |
+| **Input** | Audio `Buffer` and filename with a supported extension (`.mp3`, `.m4a`, `.wav`, `.webm`, etc.). |
+| **Processing** | Writes temp file; `openai.audio.translations.create` with `whisper-1`; GPT-4o mini grammar correction. |
 | **Output** | Corrected English transcript string. |
 | **Importance** | Primary speech-to-text layer for summaries, tasks, and chatbot context. |
 
@@ -168,9 +170,11 @@ export const transcribeAudio = async (audioBuffer, fileName) => {
 ## Code Snippet 3 — 8.1: AI Meeting Notes Generation
 
 **Source:** Backend  
-**File:** `backend/src/services/groqService.js`
+**File:** `backend/src/services/aiService.js`
 
 ```javascript
+const CHAT_MODEL = 'gpt-4o-mini';
+
 export const generateNotes = async (transcript, meetingTitle) => {
     try {
         const prompt = `You are an AI assistant that generates professional meeting notes. 
@@ -189,8 +193,8 @@ Generate comprehensive meeting notes with the following sections:
 
 Format the notes in a clear, professional manner.`;
 
-        const completion = await groq.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
+        const completion = await openai.chat.completions.create({
+            model: CHAT_MODEL,
             messages: [
                 {
                     role: 'system',
@@ -219,7 +223,7 @@ Format the notes in a clear, professional manner.`;
 |-------|-------------|
 | **Purpose** | Produces structured meeting summaries from full transcripts. |
 | **Input** | Transcript text and meeting title. |
-| **Processing** | Prompt engineering with five sections; LLaMA 3.3 chat completion. |
+| **Processing** | Prompt engineering with five sections; GPT-4o mini chat completion. |
 | **Output** | Markdown-style notes stored in `meetings.notes`. |
 | **Importance** | Key AI deliverable displayed on the Meeting Detail page. |
 
@@ -412,7 +416,7 @@ router.post('/:id/end', authMiddleware, async (req, res) => {
 | **Purpose** | Ends the live session, disconnects participants, and starts post-meeting AI processing. |
 | **Input** | Live meeting `id`; authenticated host `userId`. |
 | **Processing** | Authorization check; status `ended`; participant cleanup; conditional `processLiveMeetingAsync`. |
-| **Output** | Immediate JSON response; background Whisper + LLaMA pipeline if recording exists. |
+| **Output** | Immediate JSON response; background Whisper + GPT-4o mini pipeline if recording exists. |
 | **Importance** | Bridges real-time meeting lifecycle to AI intelligence. |
 
 **Report placement:** Chapter 6 (Implementation — Live Meetings), Chapter 7 (Testing / Workflow)
@@ -422,7 +426,7 @@ router.post('/:id/end', authMiddleware, async (req, res) => {
 ## Code Snippet 7 — 10.1: Context-Aware AI Chatbot
 
 **Source:** Backend  
-**File:** `backend/src/services/groqService.js`
+**File:** `backend/src/services/aiService.js`
 
 ```javascript
 export const chatWithContext = async (userMessage, context, chatHistory = []) => {
@@ -448,8 +452,8 @@ Answer the user's questions based on this meeting context. Be concise and helpfu
 
         messages.push({ role: 'user', content: userMessage });
 
-        const completion = await groq.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
             messages: messages,
             temperature: 0.5,
             max_tokens: 1000
@@ -469,7 +473,7 @@ Answer the user's questions based on this meeting context. Be concise and helpfu
 |-------|-------------|
 | **Purpose** | Answers user questions grounded in meeting transcript, notes, and tasks. |
 | **Input** | User message; `{ transcript, notes, tasks }`; prior chat turns. |
-| **Processing** | Builds system prompt with truncated transcript; adds last 10 turns; LLaMA completion. |
+| **Processing** | Builds system prompt with truncated transcript; adds last 10 turns; GPT-4o mini completion. |
 | **Output** | Natural language assistant reply (saved via `/api/meetings/:id/chat`). |
 | **Importance** | RAG-style Q&A over processed meeting knowledge. |
 
@@ -644,7 +648,7 @@ const handleEndMeeting = async () => {
 4. **6.4** — Host end + upload (frontend flow)  
 5. **3.3** — End meeting + AI trigger (backend flow)  
 6. **7.1** — Whisper STT  
-7. **8.1** — LLaMA summarization  
+7. **8.1** — GPT-4o mini summarization  
 8. **9.2** — Full AI pipeline  
 9. **10.1** — Context chatbot  
 10. **16.2** — Google Meet extension  

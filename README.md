@@ -14,8 +14,8 @@ This platform is built for modern teams seeking a seamless, secure, and highly p
 | Feature                            | Technical Implementation                                                                                                                   | Key Benefit                                                                                 |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
 | **Real-Time Conferencing**         | **WebRTC** for peer-to-peer audio/video streams, managed by **Socket.io** signaling.                                                       | Conduct secure, high-quality live meetings without relying on external services.            |
-| **High-Fidelity Transcription**    | Utilizes the **Groq Whisper API** for rapid, accurate audio-to-text conversion, including automatic translation to English.                | Provides a complete, corrected, and reliable record of every discussion point instantly.    |
-| **Intelligent Summarization**      | **Groq LLaMA 3.3** generates structured meeting notes, summarizing key points, decisions, and next steps in a professional format.         | Reduces manual effort and ensures consistent, high-quality documentation for every meeting. |
+| **High-Fidelity Transcription**    | Utilizes the **OpenAI Whisper API** (`whisper-1`) for accurate audio-to-text conversion, including automatic translation to English.                | Provides a complete, corrected, and reliable record of every discussion point.    |
+| **Intelligent Summarization**      | **GPT-4o mini** generates structured meeting notes, summarizing key points, decisions, and next steps in a professional format.         | Reduces manual effort and ensures consistent, high-quality documentation for every meeting. |
 | **Automated Task Extraction**      | LLM-driven analysis of the transcript to identify action items and assign them to the correct participant based on conversational context. | Drives accountability and ensures critical follow-up tasks are never missed.                |
 | **Contextual Q&A Chatbot**         | An integrated AI assistant that uses the meeting transcript as its sole knowledge base to answer specific user queries.                    | Enables quick information retrieval and deep understanding of past discussions.             |
 | **Secure Organization Management** | **Supabase Auth** and **PostgreSQL RLS** enforce domain-based team access and granular data security policies.                             | Guarantees a private and compliant workspace for sensitive corporate data.                  |
@@ -31,18 +31,25 @@ Meeting AI is structured as a modular, high-performance application, separating 
 - **Styling**: **Tailwind CSS** implements a professional, responsive UI with a modern "glassmorphism" aesthetic.
 - **Real-Time**: Custom **React Hooks** manage the complex state of WebRTC connections and Socket.io events.
 
-### Backend: Node.js, Express, and Groq
+### Backend: Node.js, Express, and OpenAI
 
 - **API Server**: **Node.js** with **Express** provides a scalable RESTful API for managing users, meetings, and chat history.
-- **AI Integration**: Direct use of the **Groq SDK** for all LLM operations, ensuring maximum speed and efficiency for transcription and generation tasks.
+- **AI Integration**: Direct use of the **OpenAI SDK** for transcription (`whisper-1`) and chat completions (`gpt-4o-mini`) — notes, task extraction, and Q&A.
 - **Data & Storage**: **Supabase** serves as the unified backend for:
   - **Authentication**: User sign-up and sign-in.
   - **Database**: PostgreSQL with robust **Row Level Security (RLS)** policies for data isolation.
   - **Storage**: Secure storage of raw audio files.
 
-##  Performance Advantage: Why Groq?
+## AI Stack
 
-This application is designed for speed. By utilizing the **Groq API**, which runs models like LLaMA 3.3 and Whisper on specialized LPU™ Inference Engines, Meeting AI achieves significantly lower latency for AI tasks compared to traditional GPU-based solutions. This performance is critical for delivering near-instantaneous transcription and summarization, enhancing the overall user experience.
+Meeting AI uses the **OpenAI API** for all LLM operations:
+
+| Task | Model |
+|------|-------|
+| Audio transcription & translation | `whisper-1` |
+| Grammar correction, notes, tasks, chat | `gpt-4o-mini` |
+
+Configure `OPENAI_API_KEY` in `backend/.env`. Audio filenames must use a supported extension (`.mp3`, `.m4a`, `.wav`, `.webm`, etc.) so Whisper accepts the upload.
 
 ##  Getting Started (Developer Setup)
 
@@ -50,7 +57,7 @@ This application is designed for speed. By utilizing the **Groq API**, which run
 
 - Node.js 16+ and npm
 - A **Supabase** account and project
-- A **Groq API Key**
+- An **OpenAI API Key**
 
 ### 1. Supabase Configuration
 
@@ -68,7 +75,7 @@ Configure your credentials in the respective `.env` files:
 PORT=5000
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_KEY=your_supabase_service_role_key
-GROQ_API_KEY=your_groq_api_key
+OPENAI_API_KEY=your_openai_api_key
 # Optional: SMTP details for email invitations
 ```
 

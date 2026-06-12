@@ -1,7 +1,7 @@
 import express from 'express';
 import supabase from '../config/supabase.js';
 import authMiddleware from '../middleware/auth.js';
-import { chatWithContext } from '../services/groqService.js';
+import { chatWithContext } from '../services/aiService.js';
 
 const router = express.Router();
 
