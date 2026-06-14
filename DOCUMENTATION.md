@@ -1,7 +1,7 @@
 # Meeting AI: Comprehensive Technical Documentation
 
 ## Table of Contents
-
+    
 1. [Project Overview](#1-project-overview)
 2. [Tech Stack](#2-tech-stack)
 3. [Architecture & System Design](#3-architecture--system-design)
